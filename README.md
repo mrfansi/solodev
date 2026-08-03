@@ -9,14 +9,22 @@ audit, and QA skills it calls along the way.
 | Skill | What it does |
 |---|---|
 | `/solodev:loop [interval] [plan]` | Runs one full development iteration, then schedules the next one itself |
+| `/solodev:task <what>` | Files a feature, bug, enhancement, or chore into the backlog — classified, scored, queued |
+| `/solodev:fe [target]` | Front-end engineering — architecture, state, runtime cost, code-level a11y |
+| `/solodev:be [target]` | Back-end engineering — boundaries, API and data design, transactions |
 | `/solodev:pr-new [title]` | Opens a PR with a title and body that follow GitHub best practice |
 | `/solodev:pr-review [pr]` | Reviews a PR and reports findings ranked by severity |
 | `/solodev:ux [flow]` | UX audit — task flows, cognitive load, error recovery |
 | `/solodev:ui [screen]` | UI audit — hierarchy, typography, spacing, contrast, states |
 | `/solodev:qa [change]` | QA — builds a test matrix, executes it, files reproducible bugs |
+| `/solodev:bug-hunter [target]` | Security audit — thinks like an attacker against your own code |
 
-Each works standalone. `loop` calls the other five automatically at the phase where
-each belongs.
+Each works standalone. `loop` calls the others automatically at the phase where each
+belongs.
+
+`fe` covers front-end **engineering**; for visual craft — typography, palette, motion —
+it defers to the [`impeccable`](https://github.com/pbakaus/impeccable) skill, which is
+far deeper on that.
 
 ## Agents
 
@@ -25,6 +33,7 @@ The audits ship as subagents too, so `loop` can run them in isolated contexts:
 | Agent | Edits files? | Role |
 |---|---|---|
 | `solodev:qa-runner` | yes — evidence only | Executes the test matrix against the real artifact |
+| `solodev:bug-hunter` | **no** | Attacks trust boundaries, reports vulnerabilities with proof |
 | `solodev:pr-reviewer` | **no** | Reviews the diff, reports by severity, never approves |
 | `solodev:ux-auditor` | **no** | Judges whether the task can be completed |
 | `solodev:ui-auditor` | **no** | Judges how it presents |

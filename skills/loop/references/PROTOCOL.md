@@ -135,6 +135,16 @@ Engineering practices** as binding rules. For a bug task, §11B applies from the
 first edit: the failing test comes before the fix, and the fix lands at the root
 cause rather than at the reported symptom.
 
+**Load the tier discipline for the code you are writing** — invoke the `Skill` tool
+inline (not as a subagent; implementation is this run's own work):
+
+- Front-end code → `solodev:fe`. If the slice also needs visual direction, run
+  `impeccable` for direction **first**, then build to it — `fe` owns structure, state,
+  and runtime cost, not visual craft.
+- Back-end code → `solodev:be`.
+- A slice spanning both → both, and design the contract between them before building
+  either side.
+
 ### Phase 4 — Real verification (MANDATORY, on the artifact that actually runs)
 
 **Delegate this phase with the `Agent` tool, `subagent_type: "solodev:qa-runner"`**,
@@ -142,6 +152,12 @@ every run — including refactor runs, where the matrix narrows to regression an
 persistence. It builds the test matrix, executes it against the real artifact, and
 files reproducible bugs. Its prompt must carry the slice under test, how to run the
 artifact, the tightest condition to test first, and the evidence path.
+
+**When the slice touched a trust boundary** — auth, input handling, data access, file
+upload, external requests — also spawn `subagent_type: "solodev:bug-hunter"` in the
+same message as `qa-runner`, so the two run concurrently. A pure internal refactor
+with no boundary change skips it, and the report says so. Any Critical or High finding
+is an **S1**: it overrides the cadence and is fixed in this run, before the commit.
 
 S1 and S2 findings are fixed in this run before the phase completes; S3 goes to the
 backlog with its origin.

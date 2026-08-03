@@ -143,13 +143,19 @@ Spawn them with the `Agent` tool:
 | Phase | `subagent_type` | Edits? | When |
 |---|---|---|---|
 | 4 — verification | `solodev:qa-runner` | yes (evidence) | **Every run**, including refactor runs, where the matrix narrows to regression and persistence |
+| 4 — verification | `solodev:bug-hunter` | no | **Only when the slice touched a trust boundary** — auth, input, data access, upload, external requests |
 | 5 — quality critique | `solodev:ux-auditor` | no | **Only when the slice touched a user-facing surface** |
 | 5 — quality critique | `solodev:ui-auditor` | no | Same condition; skipped together with `ux-auditor`, and the report says it skipped them and why |
 | 8 — before commit | `solodev:pr-reviewer` | no | **Every run**, against the working diff |
 
-Send the ones that share a phase in a **single message** so they run concurrently —
-`ux-auditor` and `ui-auditor` are independent and there is nothing to gain by
-serialising them.
+Send the ones that share a phase in a **single message** so they run concurrently:
+`qa-runner` with `bug-hunter` in Phase 4, `ux-auditor` with `ui-auditor` in Phase 5.
+They are independent and there is nothing to gain by serialising them.
+
+Implementation tiers — `fe`, `be` — and the backlog filer `task` are **skills, not
+agents**: they load inline in Phase 3, because building and filing are the run's own
+work, with nothing to isolate. Only the audits, which must not grade their own author,
+run as subagents.
 
 Each agent's prompt must carry: the slice under test, how to run the artifact, the
 tightest condition to test first, and where to write evidence. An agent that has to
@@ -161,6 +167,7 @@ is nothing to isolate.
 Their findings are not advisory:
 
 - `qa-runner` S1/S2 → fixed this run · S3 → backlog with origin
+- `bug-hunter` Critical/High → **S1**, overrides the cadence, fixed this run
 - `ux-auditor` severity 4 or `ui-auditor` blocker → **fails the rubric**, fixed this run
 - `pr-reviewer` blocker/major → fixed **before** the commit
 
