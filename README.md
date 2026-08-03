@@ -90,7 +90,7 @@ so it stops when the session ends — the work does not.
 ## Install
 
 ```bash
-/plugin marketplace add mrfansi/claude-solodev
+/plugin marketplace add mrfansi/solodev
 /plugin install solodev@solodev
 ```
 
