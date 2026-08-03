@@ -50,6 +50,22 @@
   The real figure is ~14,240, and the four uncounted files include the two that grow
   without any cap — which was the more important half of the problem.)
 
+- `[authoring]` If a shell command is going into a markdown file, then put it in a
+  fenced block, never in a table cell. (from: run #2 — a table cell must escape `|` as
+  `\|`, and that escape survives being copied into the shell. Inside `grep -E`, `\|`
+  is a *literal pipe*, so `(TODO\|FIXME\|HACK\|XXX)` searched for that exact string
+  and returned 2 hits where the working command returns 19. The flagship seam of a
+  brand-new skill could not have found anything, and the skill's own raw-hit-count
+  rule could not catch it, because the raw count really was 2. Note the sibling case:
+  the same escape in a *BRE* command — no `-E` — is correct alternation, so this fails
+  only in the ERE half.)
+
+- `[evidence]` If a transcript measures a repo that will contain that transcript, then
+  regenerate it as the last step before commit and say the number is a snapshot.
+  (from: run #2 — the seam-1 raw count moved 15 → 19 across three edits, because every
+  new sentence discussing `TODO` became a hit for the seam searching for `TODO`. Two
+  transcripts disagreed until the last one was regenerated.)
+
 ## Recurring pitfalls
 
 _(filled when the rubric fails 3 iterations, or the same task fails 2 runs in a row)_

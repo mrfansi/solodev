@@ -9,6 +9,7 @@ audit, and QA skills it calls along the way.
 | Skill | What it does |
 |---|---|
 | `/solodev:loop [interval] [plan]` | Runs one full development iteration, then schedules the next one itself |
+| `/solodev:discover [area]` | Finds work the repo proves is needed but nobody filed — and files it with citations |
 | `/solodev:task <what>` | Files a feature, bug, enhancement, or chore into the backlog — classified, scored, queued |
 | `/solodev:fe [target]` | Front-end engineering — architecture, state, runtime cost, code-level a11y |
 | `/solodev:be [target]` | Back-end engineering — boundaries, API and data design, transactions |
