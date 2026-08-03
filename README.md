@@ -18,6 +18,20 @@ audit, and QA skills it calls along the way.
 Each works standalone. `loop` calls the other five automatically at the phase where
 each belongs.
 
+## Agents
+
+The audits ship as subagents too, so `loop` can run them in isolated contexts:
+
+| Agent | Edits files? | Role |
+|---|---|---|
+| `solodev:qa-runner` | yes — evidence only | Executes the test matrix against the real artifact |
+| `solodev:pr-reviewer` | **no** | Reviews the diff, reports by severity, never approves |
+| `solodev:ux-auditor` | **no** | Judges whether the task can be completed |
+| `solodev:ui-auditor` | **no** | Judges how it presents |
+
+Three of the four have no edit tools at all. An auditor that can patch what it finds
+tends to patch instead of report, and the finding never reaches the Run Log.
+
 ## The loop
 
 ```

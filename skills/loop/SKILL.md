@@ -131,24 +131,42 @@ This is the only sanctioned way to break cadence.
 
 ---
 
-## Companion skills
+## Companion agents
 
-Each runs as a **separate subagent**, never inline. An audit performed by the agent
+Audits run as **separate subagents**, never inline. An audit performed by the agent
 that wrote the code grades its own homework, and the protocol forbids approving in
-the pass that authored the change.
+the pass that authored the change. Three of the four cannot edit files at all, so a
+finding can never be quietly fixed instead of reported.
 
-| Phase | Skill | When |
-|---|---|---|
-| 4 — verification | `qa` | **Every run**, including refactor runs, where the matrix narrows to regression and persistence |
-| 5 — quality critique | `ux` + `ui` | **Only when the slice touched a user-facing surface.** A pure internal refactor or a library change skips both — and the report says it skipped them, and why |
-| 8 — before commit | `pr-review` | **Every run**, against the working diff |
-| 8 — after commit | `pr-new` | **Every run**, opening a draft PR |
+Spawn them with the `Agent` tool:
+
+| Phase | `subagent_type` | Edits? | When |
+|---|---|---|---|
+| 4 — verification | `solodev:qa-runner` | yes (evidence) | **Every run**, including refactor runs, where the matrix narrows to regression and persistence |
+| 5 — quality critique | `solodev:ux-auditor` | no | **Only when the slice touched a user-facing surface** |
+| 5 — quality critique | `solodev:ui-auditor` | no | Same condition; skipped together with `ux-auditor`, and the report says it skipped them and why |
+| 8 — before commit | `solodev:pr-reviewer` | no | **Every run**, against the working diff |
+
+Send the ones that share a phase in a **single message** so they run concurrently —
+`ux-auditor` and `ui-auditor` are independent and there is nothing to gain by
+serialising them.
+
+Each agent's prompt must carry: the slice under test, how to run the artifact, the
+tightest condition to test first, and where to write evidence. An agent that has to
+guess what it is auditing produces findings about the wrong thing.
+
+`pr-new` runs **inline**, not as a subagent — it acts rather than judges, and there
+is nothing to isolate.
 
 Their findings are not advisory:
 
-- `qa` S1/S2 → fixed this run · S3 → backlog with origin
-- `ux`/`ui` severity 4 or blocker → **fails the rubric**, fixed this run
-- `pr-review` blocker/major → fixed **before** the commit
+- `qa-runner` S1/S2 → fixed this run · S3 → backlog with origin
+- `ux-auditor` severity 4 or `ui-auditor` blocker → **fails the rubric**, fixed this run
+- `pr-reviewer` blocker/major → fixed **before** the commit
+
+If a subagent returns nothing usable, or the agent type is unavailable because the
+plugin is only partially installed, **say so in the report and run that phase
+inline** — degraded but honest beats a phase silently skipped.
 
 ### One run, one branch, one PR
 

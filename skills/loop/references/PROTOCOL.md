@@ -137,11 +137,14 @@ cause rather than at the reported symptom.
 
 ### Phase 4 — Real verification (MANDATORY, on the artifact that actually runs)
 
-**Delegate this phase to the `qa` skill as a separate subagent**, every run —
-including refactor runs, where the matrix narrows to regression and persistence. It
-builds the test matrix, executes it, and files reproducible bugs. S1 and S2 findings
-are fixed in this run before the phase completes; S3 goes to the backlog with its
-origin.
+**Delegate this phase with the `Agent` tool, `subagent_type: "solodev:qa-runner"`**,
+every run — including refactor runs, where the matrix narrows to regression and
+persistence. It builds the test matrix, executes it against the real artifact, and
+files reproducible bugs. Its prompt must carry the slice under test, how to run the
+artifact, the tightest condition to test first, and the evidence path.
+
+S1 and S2 findings are fixed in this run before the phase completes; S3 goes to the
+backlog with its origin.
 
 Play a **real user**, not a developer. Run the scenario from a normal entry point
 through to completion. Green tests do not substitute for this phase.
@@ -163,11 +166,15 @@ data, longest input), then the roomy ones.
 
 ### Phase 5 — Quality critique (threshold rubric, honest)
 
-**When the slice touched a user-facing surface, delegate to the `ux` and `ui` skills
-as separate subagents** — `ux` for whether the task can be completed, `ui` for how it
-presents. A pure internal refactor or a library change skips both, and the report
-states that it skipped them and why. A `ux` severity 4 or a `ui` blocker **fails this
-phase** regardless of the rubric total.
+**When the slice touched a user-facing surface, spawn both auditors in a single
+message** so they run concurrently: `Agent` with `subagent_type:
+"solodev:ux-auditor"` (can the task be completed) and `subagent_type:
+"solodev:ui-auditor"` (how it presents). Neither can edit files, so every finding
+comes back as a report rather than a silent fix.
+
+A pure internal refactor or a library change skips both, and the report states that
+it skipped them and why. A `ux-auditor` severity 4 or a `ui-auditor` blocker **fails
+this phase** regardless of the rubric total.
 
 See §5. **Passes at ≥14 of 16 AND no item scoring 0.** At most 3 improvement
 iterations; still failing → descope and record the cause as a pitfall in
@@ -197,9 +204,10 @@ failed**, whatever the code achieved.
 The run works on its own branch, `loop/run-<N>-<short-slug>`, branched from the
 default branch once Phase 0 confirmed a clean tree.
 
-1. **Review before committing** — delegate to the `pr-review` skill as a separate
-   subagent, against the working diff (§11F). Blockers and majors are fixed in this
-   run, before the commit exists.
+1. **Review before committing** — `Agent` with `subagent_type:
+   "solodev:pr-reviewer"`, against the working diff (§11F). It cannot edit, so it
+   reports rather than patches. Blockers and majors are fixed in this run, before the
+   commit exists.
 2. **Commit** — §11A governs shape: Conventional Commits, one intent per commit, the
    diff read before committing. The message explains **WHAT** and **WHY**, not a
    restatement of the diff.
@@ -495,9 +503,10 @@ decide whether to finish the current slice first.
   A few lines of code beat a new dependency.
 
 ### F. Review
-- **Do not self-approve in the same pass that wrote the code.** The `pr-review` skill
-  runs as a separate subagent before every commit, reading the change without the
-  author's assumptions about what it was supposed to do.
+- **Do not self-approve in the same pass that wrote the code.** The
+  `solodev:pr-reviewer` subagent runs before every commit, in its own context and
+  without edit tools, reading the change free of the author's assumptions about what
+  it was supposed to do.
 
 ### G. Scope discipline
 - Unrelated improvements spotted along the way go to the backlog, not into this
