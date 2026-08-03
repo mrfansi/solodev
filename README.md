@@ -38,7 +38,7 @@ The audits ship as subagents too, so `loop` can run them in isolated contexts:
 | `solodev:ux-auditor` | **no** | Judges whether the task can be completed |
 | `solodev:ui-auditor` | **no** | Judges how it presents |
 
-Three of the four have no edit tools at all. An auditor that can patch what it finds
+Four of the five have no edit tools at all. An auditor that can patch what it finds
 tends to patch instead of report, and the finding never reaches the Run Log.
 
 ## The loop
@@ -90,9 +90,14 @@ so it stops when the session ends — the work does not.
 ## Install
 
 ```bash
-/plugin marketplace add ~/Github/mrfansi/claude-solodev
+/plugin marketplace add mrfansi/claude-solodev
 /plugin install solodev@solodev
 ```
+
+Developing on it locally? Point the marketplace at the clone instead —
+`/plugin marketplace add /path/to/claude-solodev` — and run
+`python3 scripts/validate.py` before committing; it checks the manifests, every
+frontmatter block, and every cross-reference between skills, agents, and this README.
 
 ## Design notes
 

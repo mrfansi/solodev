@@ -108,5 +108,6 @@ Libraries and APIs have a user experience too. Translate:
 ## When the loop skill invokes this
 
 Runs in Phase 5 against the slice just built, only when that slice touched a
-user-facing surface. Any severity 4 or 3 finding **fails the rubric** and is fixed in
-the same run; severity 2 and 1 go to the backlog with their origin recorded.
+user-facing surface. A severity 4 finding **fails the rubric** outright; severity 3 is
+fixed in the same run without failing it; severity 2 and 1 go to the backlog with
+their origin recorded.

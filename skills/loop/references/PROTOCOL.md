@@ -1,4 +1,4 @@
-# LOOP PROTOCOL · v1.0
+# LOOP PROTOCOL · v1.1
 
 > This file is **the protocol source of truth for this repository**. The loop may
 > patch it (§4D). Do not overwrite it from the skill template unless asked.
@@ -33,6 +33,12 @@ User satisfaction outranks feature completeness.
    behaviour-preserving, proven by identically-named tests staying green.
 7. **Never guess an API.** Read the source, or read `specs/REFERENCE.md`.
 8. **The next-iteration plan must be written to a file**, not merely spoken.
+9. **Every run produces one improvement to this loop** — a recorded lesson or a
+   protocol patch (§4).
+10. **§11 engineering practices are binding**, not advisory.
+11. **Anything found but deliberately not fixed goes to the backlog with its
+    origin** (§10) — never silently dropped, never opportunistically fixed inside an
+    unrelated slice.
 
 ---
 
@@ -98,6 +104,8 @@ as a feature instead of jumping the queue by being the most recent thing said.
 **Cadence:**
 - Run #N where `N % 3 == 0` → audit/refactor is mandatory, **not** a new feature.
 - Run #N where `N % 5 == 0` → meta-review plus protocol patch is mandatory (§4D).
+- Both at once (#15, #30, …) → do both: the slice is audit/refactor **and** the run
+  produces a patch. They stack; neither cancels the other.
 - **An S1 bug (§10) overrides both**, and the override is recorded in the Run Log.
 
 Take the highest score that **certainly fits** in one run. In doubt → split it.
@@ -534,3 +542,6 @@ decide whether to finish the current slice first.
 ## §12 PROTOCOL HISTORY
 
 - **v1.0** — initial protocol, bootstrapped from the `dev-loop` skill.
+- **v1.1** — §1 absorbed the three invariants that previously lived only in the skill
+  (loop improvement, §11 binding, findings filed with their origin), so they survive
+  bootstrap. §3 Phase 1 states what happens when both cadences land on the same run.
