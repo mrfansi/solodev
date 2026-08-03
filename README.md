@@ -1,0 +1,90 @@
+# solodev
+
+Claude Code skills for solo developers who want the discipline of a team: a
+self-improving development loop that keeps its state in the repo, plus the review,
+audit, and QA skills it calls along the way.
+
+## Skills
+
+| Skill | What it does |
+|---|---|
+| `/solodev:loop [interval] [plan]` | Runs one full development iteration, then schedules the next one itself |
+| `/solodev:pr-new [title]` | Opens a PR with a title and body that follow GitHub best practice |
+| `/solodev:pr-review [pr]` | Reviews a PR and reports findings ranked by severity |
+| `/solodev:ux [flow]` | UX audit — task flows, cognitive load, error recovery |
+| `/solodev:ui [screen]` | UI audit — hierarchy, typography, spacing, contrast, states |
+| `/solodev:qa [change]` | QA — builds a test matrix, executes it, files reproducible bugs |
+
+Each works standalone. `loop` calls the other five automatically at the phase where
+each belongs.
+
+## The loop
+
+```
+/solodev:loop                      # run, then reschedule at a self-chosen pace
+/solodev:loop 45m                  # every 45 minutes
+/solodev:loop 2h fix export bug    # every 2 hours, with a request attached
+/solodev:loop once add PDF export  # exactly one run
+/solodev:loop stop                 # cancel scheduling
+```
+
+The first run in a repo **bootstraps** rather than shipping a feature: it writes the
+protocol to `specs/LOOP.md`, detects the stack, creates `README.md`, `CHANGELOG.md`,
+and `docs/` if missing, and builds the initial scored backlog. The second run is the
+first to touch code.
+
+### Every run produces
+
+1. One **complete slice** a user can carry out end to end
+2. One **improvement to the loop itself** — a recorded lesson or a protocol patch
+3. One **plan for the next iteration**, written to a file
+
+### Every run must
+
+- Write its Definition of Done **before** the code
+- Verify on the real artifact and keep evidence
+- Pass a quality rubric (≥14/16, no item at 0)
+- Pass format, lint, and test gates
+- Update `README.md`, `CHANGELOG.md`, and `docs/`
+- Get reviewed by a separate agent before committing
+- End in a draft PR on its own branch
+
+### It survives sessions
+
+The loop's state lives in the repo, not in the conversation:
+
+| File | Holds |
+|---|---|
+| `specs/LOOP.md` | The protocol — the loop patches its own copy over time |
+| `specs/LOOP_STATE.md` | Scored backlog, current task, Run Log, next-iteration plan |
+| `specs/LOOP_LEARNINGS.md` | Binding rules learned from real failures, capped at 150 lines |
+| `specs/REFERENCE.md` | Cached external API patterns |
+| `docs/evidence/` | Verification captures |
+
+A fresh session only needs `/solodev:loop` again. Scheduling itself is session-only,
+so it stops when the session ends — the work does not.
+
+## Install
+
+```bash
+/plugin marketplace add ~/Github/mrfansi/claude-solodev
+/plugin install solodev@solodev
+```
+
+## Design notes
+
+**The loop improves itself, but cannot bloat.** Rules only come from things that
+actually went wrong — never hypotheses. Rules the compiler, tests, or lint already
+enforce must be deleted. Protocol patches must point at a failure recorded in the Run
+Log, may change at most two sections, and must delete as many lines as they add.
+
+**Audits run as separate agents.** An agent that grades its own work is generous with
+itself, so `qa`, `ux`, `ui`, and `pr-review` each run in their own context.
+
+**Cadence beats enthusiasm.** Every third run is audit or refactor instead of a
+feature; every fifth adds a meta-review. Only an S1 bug — data loss, a security hole,
+or a primary flow that cannot be completed — is allowed to break that.
+
+## License
+
+MIT

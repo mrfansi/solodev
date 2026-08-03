@@ -1,0 +1,10 @@
+{
+  "name": "solodev",
+  "description": "A self-improving development loop with cross-session state, plus the PR, UX, UI, and QA skills it calls along the way.",
+  "version": "0.1.0",
+  "author": {
+    "name": "Muhammad Irfan"
+  },
+  "license": "MIT",
+  "skills": "./skills/"
+}

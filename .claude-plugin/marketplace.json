@@ -1,0 +1,18 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "solodev",
+  "description": "Development workflow skills by Muhammad Irfan.",
+  "owner": {
+    "name": "Muhammad Irfan"
+  },
+  "plugins": [
+    {
+      "name": "solodev",
+      "source": "./",
+      "description": "A self-improving development loop with cross-session state, plus the PR, UX, UI, and QA skills it calls along the way.",
+      "version": "0.1.0",
+      "category": "productivity",
+      "keywords": ["loop", "iteration", "code-review", "pull-request", "ux", "ui", "qa"]
+    }
+  ]
+}
