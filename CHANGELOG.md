@@ -9,6 +9,27 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- **A hook that stops you committing the workspace.** Installing the plugin now
+  installs one Claude Code hook (`PreToolUse`, on Bash). It blocks a `git commit` that
+  would put `specs/` or `docs/evidence/` into git history — bookkeeping, and raw
+  transcripts of whatever a run printed, which is an open-ended capture surface for a
+  credential. Git history is permanent; this is the one rule worth enforcing in code
+  rather than trusting an agent to remember it.
+
+  It is quiet by design. A repository with no `specs/LOOP.md` never opted in and is
+  never touched. **Your own `docs/` stays yours** — the hook blocks only on `specs/`
+  and `docs/evidence/`, never on documentation you wrote, even in a repository running
+  the loop. Anything it cannot parse is allowed through: a guard that blocks when it is
+  confused is worse than the leak it prevents.
+
+  It reads the command rather than pattern-matching it, so `cd elsewhere && git commit`
+  and `git -C elsewhere commit` are checked against the repository they actually commit
+  to, and `git log --author='git commit'` is not mistaken for a commit.
+  `python3 hooks/guard-workspace.py --selfcheck` decides every case against throwaway
+  repositories. Behaviour and limits: `docs/flows/hooks.md`.
+
+  Set `SOLODEV_NO_GUARD=1` if a repository commits its workspace on purpose.
+
 - **`token-cost.py --agents` — the bill, by agent type, across every session.** One
   command for the question "is this check worth what it costs": spawns, turns and
   total per agent type. Totals only, never averages — deciding whether to remove
@@ -48,6 +69,11 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   survives; approval is left to a human.
 
 ### Changed
+
+- `scripts/validate.py` now checks `hooks/hooks.json`: that the file exists, that it
+  parses, that every event name is a real Claude Code hook event, and that every
+  `${CLAUDE_PLUGIN_ROOT}` script path resolves. Nothing at runtime reports a hook that
+  failed to load, so a hook that never fires is indistinguishable from one that works.
 
 - **Protocol v1.12: orientation checks that past work actually landed.** A change can
   be committed, reviewed and written up as finished while its branch never reaches the
