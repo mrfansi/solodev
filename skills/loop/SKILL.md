@@ -98,7 +98,7 @@ The first run **ships no feature**. Its job is to stand up the loop machinery:
 7. **Build the initial scored backlog** from reading the repo plus the user's
    request, and write it to `specs/LOOP_STATE.md`.
 8. Write memory as described below.
-9. Commit, then open the run's draft PR via `pr-new`.
+9. Commit, then open the run's PR via `pr-new`.
 10. Write the §9 report, including the plan for the next iteration.
 
 Run #2 is the first one to touch a feature.
