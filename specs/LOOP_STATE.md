@@ -27,7 +27,7 @@ skill for real. Keep stdout transcripts under docs/evidence/.`
 
 ## Current state
 
-Plugin `solodev` v0.1.0. **Eleven skills**, five agents, one structure validator.
+Plugin `solodev` v0.1.0. **Twelve skills**, five agents, one structure validator.
 
 Run #1 installed the loop machinery — protocol, state, learnings, reference cache —
 and created the `CHANGELOG.md` and `docs/` that the protocol requires of every repo it
@@ -89,13 +89,22 @@ does not repeat.
 Confirm the base carries the latest run before Phase 1:
 
 ```bash
-git log --oneline -1 --format='%h %s'          # newest commit on this branch
-grep -c "^Run #" specs/LOOP_STATE.md           # must equal the last run number
+git log --oneline -1 --format='%h %s'                        # newest commit here
+sed -n '/^## Run Log/,$p' specs/LOOP_STATE.md | grep -c '^Run #[0-9]* |'
 ```
 
-Do **not** use `git log -- specs/LOOP.md` for this. That file has not changed since
-run #1, so every loop branch returns the same commit and the check cannot tell a
-stale base from a current one. Run #3 shipped that check and `pr-reviewer` caught it.
+The second command must equal the last run number. It counts **only** Run Log entries:
+scoped to the section, and anchored on the `Run #N |` pipe that every entry carries and
+no prose does.
+
+Two earlier versions of this check were wrong, both shipped:
+
+- `git log -- specs/LOOP.md` — that file barely changes, so every loop branch returns
+  the same commit. It could distinguish a loop branch from `main` and nothing else.
+  Caught by `pr-reviewer` in run #3.
+- `grep -c "^Run #"` over the whole file — matched prose like *"Run #1 installed the
+  loop machinery"* and returned **7** where the true answer was 3. Caught in run #4
+  Phase 0, by the check misleading the very run it was written for. Filed as `B-3`.
 
 ---
 
@@ -136,99 +145,82 @@ not re-open it.
 
 ## Current task
 
-**Run #3 — R-2: strip `skills/loop/SKILL.md` of protocol duplication. C-4 folds in.**
+**Run #4 — F-2: `/solodev:ship`, the teammate that cuts a release**
 
-Score: `10.0` (Value 4 × Frequency 5 ÷ Size 2). Taken from the inherited plan
-unchanged.
+Score: `10.0` (Value 5 × Frequency 4 ÷ Size 2). Highest-scoring **feature**; `R-3`
+scores 20.0 but is a refactor, and its CHANGELOG half is delivered as a side effect of
+this slice. Folds in `B-3` and `B-4` per §10.
 
-Cadence: run #3 → `3 % 3 == 0` → **audit/refactor mandatory, a new feature is
-forbidden**. `3 % 5 != 0`, so no meta-review is due.
+Cadence: run #4 → `4 % 3 != 0`, `4 % 5 != 0` → no cadence constraint. Protocol **v1.2**
+plus the standing directive → ship a feature. No conflict; `C-5` is closed.
 
-### C-5 resolved for this run by the provisional default — and it went against the directive
+**Why this, on evidence rather than on the backlog being empty of features.** Protocol
+§3 Phase 8 step 3 mandates: *"user-visible change → bump SemVer and move `[Unreleased]`
+into a version section."* Three runs have shipped user-visible changes. There are **zero
+version sections, zero tags, and the version is still 0.1.0.** The protocol has been
+mandating a step that no skill supports and no run has performed — `discover` seam 2,
+"a promise with no keeper", found in the plugin's own protocol.
 
-Run #2 left `C-5` open: the standing directive says every iteration ships one
-impactful feature; §3 Phase 1 says every third run must be a refactor and must not.
-Run #2 wrote a provisional default to be used **only if the user had still not ruled**
-by the time run #3 started.
+Research turned that from an oversight into a defect. Claude Code's plugin reference
+states it verbatim: *"Users get updates **only when you bump this field**. Pushing new
+commits without bumping it has no effect, and `/plugin update` reports 'already at the
+latest version'."* Because `version` is set and pinned at 0.1.0, **everything runs #1–#3
+shipped is unreachable to anyone who installs solodev**, and the update command reports
+success while doing nothing. Filed as `B-4`, S2.
 
-**They had not.** This run was started by the scheduled wakeup, not by a person:
-fired at 05:23:30 against a wakeup scheduled for 05:23, carrying arguments
-byte-identical to the ones run #2 passed to `ScheduleWakeup` itself. Treating the
-loop's own echoed prompt as the user reaffirming the directive would manufacture a
-ruling out of nothing — which is exactly the assumption the same directive forbids.
-
-So the default applies: **protocol wins, this run ships no feature.** Stated plainly
-because the directive's author is owed it in plain words, per the run #2 plan.
-The question is put to the user directly at the end of this run rather than left in
-prose a wakeup cannot answer.
+It also delivers the CHANGELOG half of `R-3`: cutting `[Unreleased]` into a version
+section removes ~1,175 tokens from the per-run Phase 0 read. Run #3's plan said this
+half *"is not roll-off material — it is release material"*, so a release concept was
+always its prerequisite.
 
 Binding `LOOP_LEARNINGS.md` rules, and how this run complies:
-- `[backlog]` "X duplicates Y" → read both files first. **Applied as the whole of
-  Phase 3:** every one of 22 deletion candidates was grepped against `specs/LOOP.md`
-  before removal. Four came back absent and were kept. Evidence:
-  `docs/evidence/2026-08-04-skill-dedup/01-duplication-audit.txt`.
-- `[authoring]` shell command into markdown → fenced block, never a table cell.
-  **Applies to C-4:** the validator gains a `git check-ignore` call; its command goes
-  in code, not in a doc table.
-- `[measurement]` / `[claims]` a cost-justified task → measure it and name the inputs.
-  **Applied:** SKILL.md byte size before and after, and the Phase 0 read total
-  recomputed over the same six files run #1 measured.
-- `[evidence]` a transcript measuring a repo that will contain it → regenerate last.
-- `[verification]` deliverable is files → `git add -n` before Phase 8.
-- `[docs]` a documented command → run it, not a plausibility check. **Applies to
-  C-4:** the new validator checks must be shown failing on a deliberately broken
-  `.gitignore`, not merely passing on the good one.
+- `[claims]` measured headline → name the inputs. **Applied:** the version-pin claim is
+  quoted from the fetched reference, not inferred, and cached in `specs/REFERENCE.md`.
+- `[gates]` break a new check the narrowest way. **Applies:** the validator gains a
+  version-consistency check; it must be shown failing on a *partial* bump, not just a
+  mismatched one.
+- `[authoring]` shell commands into fenced blocks, never table cells.
+- `[claims]`/`[evidence]` no retyped numbers; regenerate measurements last.
+- `[refactor]` split multi-clause candidates — applies to the CHANGELOG cut.
 
 ### Call-site inventory (Phase 3 — filled in before editing)
 
-| File | Location | Change |
-|---|---|---|
-| `skills/loop/SKILL.md` | "Work attached to the invocation" | delete table, point at §10 + §3 Phase 1 |
-| `skills/loop/SKILL.md` | "Companion agents" | delete the phase table and the findings list; **keep** the three clauses that exist nowhere else |
-| `skills/loop/SKILL.md` | "One run, one branch, one PR" | delete, point at §3 Phase 8 |
-| `skills/loop/SKILL.md` | MEMORY layer 1 table | delete, point at §2; **keep** layer 2, which §2 explicitly hands to this file |
-| `scripts/validate.py` | new checks | `git check-ignore` on `specs/`+`docs/`; add `docs/architecture.md` to the agent-count scan |
-| `specs/LOOP_LEARNINGS.md` | `[verification]` rule | delete once the validator enforces it, per §4C |
-| `README.md`, `CHANGELOG.md`, `docs/` | — | §6 |
+| File | Change |
+|---|---|
+| `skills/ship/SKILL.md` | new — the skill |
+| `.claude-plugin/plugin.json` | version 0.1.0 → the bump this run cuts |
+| `.claude-plugin/marketplace.json` | same version; the validator already enforces they match |
+| `CHANGELOG.md` | `[Unreleased]` cut into a dated version section + link refs |
+| `scripts/validate.py` | version-consistency check; fix `B-3`'s broken base check is **not** here — it is in LOOP_STATE prose |
+| `specs/LOOP_STATE.md` | `B-3` fix: the base-verification command |
+| `specs/REFERENCE.md` | cache the version-management spec |
+| `README.md`, `docs/` | §6 |
 
-`grep -rn "solodev:task\|degraded\|pr-new" specs/LOOP.md` is what established which
-clauses are unique; no other file references SKILL.md's section headings, so there are
-no external callers to update.
+`grep -rn "version" scripts/validate.py specs/LOOP.md` established that the only
+existing version rule is the manifest-drift check and §3 Phase 8 step 3. No skill
+references releasing, so there are no callers to update.
 
 ### Definition of Done for this iteration (Phase 1 — before any code)
 
-- [x] Every deleted line of `SKILL.md` is proven to exist in `specs/LOOP.md`, with
-      the section recorded — and anything absent from the protocol is **kept**
-      *(22 candidates grepped. **Failed on the first pass**: the audit treated a
-      two-clause table row as one claim and deleted a rule that exists nowhere.
-      Caught by `qa-runner` as S1, restored. Now four clauses live only in SKILL.md,
-      not three)*
-- [x] `skills/loop/SKILL.md` is measurably smaller; the byte delta is stated
-      *(see the generated measurement)*
-- [x] The protocol-absent clauses all survive *(four: `task` inline, `pr-new` inline,
-      degraded-agent fallback, and the deferred-feature rule restored after S1)*
-- [x] `scripts/validate.py` fails on a **deliberately broken** `.gitignore` and
-      passes on the real one — demonstrated, not asserted
-      *(**Failed twice before it held.** v1 used plain `git check-ignore`, which
-      skips tracked paths — a gate that could not fire. v2 with `--no-index` caught
-      the roots but not `docs/evidence/`, found by `qa-runner` as S1. v3 walks every
-      subdirectory. Evidence: `08-gate-subpath-fixed.txt`)*
-- [x] `scripts/validate.py` scans `docs/architecture.md` for the agent-count claim,
-      and that new check is shown failing on a deliberately wrong count
-- [x] The `[verification]` learning is deleted and replaced by a pointer to the
-      check that now enforces it (§4C) *(retirement was premature at v2 — the check
-      was narrower than the rule. Valid only after v3, with the scope limit stated)*
-- [x] Behaviour is preserved *(not on the first attempt — one rule was lost and
-      restored. Verified after the fix)*
-- [x] The Phase 0 read total is recomputed over the same six files run #1 measured
-      *(regenerated as the final pre-commit step after `qa-runner` filed the first
-      measurement as stale — S2, and a violation of this run's own `[evidence]` rule)*
-- [x] README, CHANGELOG, and `docs/` updated (§6)
-- [x] The report states plainly that this run shipped no feature, and why
+- [ ] `skills/ship/SKILL.md` exists and uses only frontmatter keys confirmed in
+      `specs/REFERENCE.md`
+- [ ] It bumps **both** manifests and never lets them diverge — the validator proves
+      this by failing on a deliberate partial bump
+- [ ] It derives the bump from the `[Unreleased]` content per SemVer, and states its
+      reasoning rather than asking the user to pick a number blind
+- [ ] It **stops before tagging or pushing**, printing the exact commands instead —
+      §11A forbids tagging without permission, and `docs/architecture.md` names
+      shipping as the boundary the plugin deliberately hands over
+- [ ] The skill is **executed against this repo**: a real release is cut, `B-4` closed,
+      and `[Unreleased]` emptied
+- [ ] The Phase 0 read total is re-measured and the CHANGELOG reduction shown
+- [ ] `B-3` fixed: the base-verification command in this file returns the true run
+      count, demonstrated against the current file
+- [ ] `python3 scripts/validate.py` green, 12 skills, README cross-reference satisfied
+- [ ] `docs/architecture.md`'s "What is deliberately missing" updated — it currently
+      says nothing ships, which this run partly changes
+- [ ] README, CHANGELOG, and `docs/` updated (§6)
 
-Score: `12.5` (Value 5 × Frequency 5 ÷ Size 2). Rescored upward from its parked 2.0
-— see the deviation note below; the standing directive changed both Value and
-Frequency, and the slice is much smaller than the original F-1 framing.
 ---
 
 ## Next iteration plan (written by Run #3, for Run #4)

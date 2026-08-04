@@ -1,0 +1,56 @@
+Check: does skill step 2's bump table give an unambiguous, correct answer for
+this repo's actual [Unreleased] content?
+
+$ sed -n '/## \[Unreleased\]/,/^## \[/p' CHANGELOG.md | grep '^###'
+### Added
+### Changed
+### Fixed
+### Internal
+
+No `Removed` subsection, no entry marked breaking. Per the primary table
+(skills/ship/SKILL.md lines 42-46):
+
+  | Removed / breaking       | MAJOR |
+  | Added                    | MINOR |
+  | only Fixed/Security/Internal/Changed | PATCH |
+
+`Added` is present -> primary table says MINOR (0.1.0 -> 0.2.0).
+
+But repo is below 1.0.0, so the second clause (line 48-50) applies:
+
+  "Below 1.0.0 the same shape applies one place to the right if the project
+  says it is unstable — a MAJOR-shaped change becomes a MINOR bump."
+
+Two problems found:
+
+1. Gating condition has no referent anywhere in the repo:
+
+   $ grep -rn -i "unstable\|pre-1.0\|0.y.z\|initial development" . \
+       --include="*.md" --include="*.json" | grep -v .git/
+   skills/ship/SKILL.md:49:unstable — a MAJOR-shaped change becomes a MINOR bump.
+
+   Only the skill's own sentence matches. There is no field, flag, or prose
+   anywhere else in the repo that "says it [the project] is unstable" for an
+   operator to check against. Being <1.0.0 is presumably meant to satisfy the
+   condition by itself, but the clause's wording ("if the project says...")
+   implies a separate, checkable fact that does not exist.
+
+2. The clause states the outcome for exactly one row (MAJOR-shaped -> MINOR)
+   and is silent on what an Added-shaped (MINOR-shaped) change becomes.
+   Two equally defensible readings for THIS run's actual content:
+
+   a) Only the MAJOR row is affected by the sub-1.0 clause; Added still maps
+      to MINOR per the primary table -> 0.1.0 -> 0.2.0.
+   b) "The same shape applies one place to the right" shifts every row, not
+      just the stated example; Added (row 2) shifts into row 3's PATCH
+      outcome -> 0.1.0 -> 0.1.1.
+
+   These are materially different version numbers. The skill instructs the
+   operator to "say which convention you applied; do not leave the reader to
+   reverse-engineer it from the number" — but the clause itself requires
+   exactly that reverse-engineering for any [Unreleased] shaped like this
+   run's (Added present, nothing Removed, project <1.0.0).
+
+Conclusion: applied to this repo's real CHANGELOG, step 2 does NOT produce an
+unambiguous answer. Filed as S1 — this is the "step that would produce a
+wrong version number" scenario.
