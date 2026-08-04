@@ -40,7 +40,7 @@ Re-filing something that was deliberately closed reopens an argument the repo al
 settled, and it is the fastest way to make this skill unwelcome.
 
 No `specs/LOOP_STATE.md` → the loop has not been bootstrapped. Say so, and file into
-the format `/solodev:task` describes so `/solodev:loop` picks the items up on its
+the format `/solodev:task` describes so `/solodev:autopilot` picks the items up on its
 first run.
 
 ## 2. Work the seams

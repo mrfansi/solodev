@@ -62,7 +62,7 @@ does not belong in the product's history — and `docs/evidence/` captures raw c
 output, so a stray credential committed there would be permanent.
 
 The cost is real and is not hidden: **the loop does not survive a fresh clone.** A new
-checkout has no `specs/LOOP.md`, so `/solodev:loop` bootstraps from scratch and the
+checkout has no `specs/LOOP.md`, so `/solodev:autopilot` bootstraps from scratch and the
 backlog, Run Log and learnings do not travel. They persist for whoever holds the
 working copy, and no further. Back them up outside git if they matter.
 
@@ -118,7 +118,7 @@ ceremony.
 the score of the task that eliminates it. Mining a lesson beats an untested new
 feature.
 
-**Intake first:** anything the user attached to this `/loop` invocation is classified
+**Intake first:** anything the user attached to this `/autopilot` invocation is classified
 and scored per §10 **before** selection, so a bug request competes on the same scale
 as a feature instead of jumping the queue by being the most recent thing said.
 
@@ -401,7 +401,7 @@ Test each line: **would it still belong if the product had been built by hand?**
 not, it belongs in `specs/LOOP_STATE.md`.
 
 One exception: a repo whose *product is the workflow tooling itself*. This plugin's
-own README documents `/solodev:loop` because the loop is the thing being shipped —
+own README documents `/solodev:autopilot` because the loop is the thing being shipped —
 product documentation, not workflow leakage. The same test decides it, since built by
 hand that README would say exactly the same.
 
@@ -467,7 +467,7 @@ Risk        : <what could blow up the scope>
 ```
 
 This plan **binds the next run's Phase 1 as its default candidate**. Deviating is
-allowed as long as the reason is written down. This is what lets `/loop` in a fresh
+allowed as long as the reason is written down. This is what lets `/autopilot` in a fresh
 session start working immediately without asking the user anything.
 
 A feature the audit cadence deferred this run is the default `Task` here, and the
@@ -499,7 +499,7 @@ RUN #N — <id + task>   [feature | bug S<n> | enhancement | refactor | chore]
 
 ## §10 WORK INTAKE & CLASSIFICATION
 
-Work reaches the backlog three ways: attached to the `/loop` invocation, added by
+Work reaches the backlog three ways: attached to the `/autopilot` invocation, added by
 hand to `specs/LOOP_STATE.md`, or discovered by the loop itself during Phase 4.
 
 Every item enters the backlog with a type-prefixed id, a score, and its origin.

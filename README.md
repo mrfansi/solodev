@@ -8,7 +8,7 @@ audit, and QA skills it calls along the way.
 
 | Skill | What it does |
 |---|---|
-| `/solodev:loop [interval] [plan]` | Runs one full development iteration, then schedules the next one itself |
+| `/solodev:autopilot [interval] [plan]` | Runs one full development iteration, then schedules the next one itself |
 | `/solodev:discover [area]` | Finds work the repo proves is needed but nobody filed — and files it with citations |
 | `/solodev:graph [build\|question]` | Builds and queries a greppable code map — module cards, god nodes, edges — under `specs/graph/` |
 | `/solodev:task <what>` | Files a feature, bug, enhancement, or chore into the backlog — classified, scored, queued |
@@ -48,11 +48,11 @@ tends to patch instead of report, and the finding never reaches the Run Log.
 ## The loop
 
 ```
-/solodev:loop                      # run, then reschedule at a self-chosen pace
-/solodev:loop 45m                  # every 45 minutes
-/solodev:loop 2h fix export bug    # every 2 hours, with a request attached
-/solodev:loop once add PDF export  # exactly one run
-/solodev:loop stop                 # cancel scheduling
+/solodev:autopilot                      # run, then reschedule at a self-chosen pace
+/solodev:autopilot 45m                  # every 45 minutes
+/solodev:autopilot 2h fix export bug    # every 2 hours, with a request attached
+/solodev:autopilot once add PDF export  # exactly one run
+/solodev:autopilot stop                 # cancel scheduling
 ```
 
 The first run in a repo **bootstraps** rather than shipping a feature: it writes the
@@ -98,7 +98,7 @@ into your `README.md` or `CHANGELOG.md` either.
 The trade is stated rather than hidden: **the loop's memory does not survive a fresh
 clone.** It lives with the working copy.
 
-A fresh session only needs `/solodev:loop` again. Scheduling itself is session-only,
+A fresh session only needs `/solodev:autopilot` again. Scheduling itself is session-only,
 so it stops when the session ends — the work does not.
 
 ## Install
