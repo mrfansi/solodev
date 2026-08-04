@@ -6,6 +6,7 @@ Exits non-zero on any error. Warnings do not fail the run.
 """
 import json
 import re
+import subprocess
 import sys
 from pathlib import Path
 
@@ -60,8 +61,46 @@ else:
     if entry.get("version") != plugin.get("version"):
         err(
             f"version drift: plugin.json {plugin.get('version')!r} vs "
-            f"marketplace.json {entry.get('version')!r}"
+            f"marketplace.json {entry.get('version')!r}. plugin.json wins at runtime, "
+            f"so this misleads readers rather than breaking installs — but a release "
+            f"that moved one file and not the other is a half-cut release"
         )
+    # The version is the cache key Claude Code uses to decide whether an update
+    # exists. A version that never moves means installed users never receive
+    # anything, silently — /plugin update reports success. So it must at least be
+    # well-formed SemVer, and the CHANGELOG must have a matching section.
+    ver = plugin.get("version", "")
+    if not re.fullmatch(r"\d+\.\d+\.\d+", ver):
+        err(f"plugin.json version {ver!r} is not MAJOR.MINOR.PATCH")
+    elif ver != "0.1.0":  # 0.1.0 predates this repo's changelog convention
+        cl_path = ROOT / "CHANGELOG.md"
+        if not cl_path.exists():
+            err(f"version {ver} is set but CHANGELOG.md does not exist")
+        else:
+            changelog = cl_path.read_text()
+            # A bare substring test passes on a section that is empty, undated, or
+            # merely quoted in prose. All three shipped a green gate once; each of
+            # these three assertions kills one of them.
+            m = re.search(
+                rf"^## \[{re.escape(ver)}\][^\n]*$(.*?)(?=^## \[|\Z)",
+                changelog, re.M | re.S,
+            )
+            if not m:
+                err(
+                    f"version {ver} has no `## [{ver}]` section heading in "
+                    f"CHANGELOG.md. Bumping without cutting the changelog leaves "
+                    f"users no way to see what they received"
+                )
+            elif not re.search(r"^\s*[-*] ", m.group(1), re.M):
+                err(
+                    f"CHANGELOG.md's `## [{ver}]` section is empty. The version was "
+                    f"cut but the entries were left behind"
+                )
+            if not re.search(r"^## \[Unreleased\]", changelog, re.M):
+                err(
+                    "CHANGELOG.md has no `## [Unreleased]` section. Cutting a release "
+                    "must leave a fresh empty one for the next run to write into"
+                )
     if entry.get("description") != plugin.get("description"):
         warn("description differs between plugin.json and marketplace.json")
 
@@ -132,17 +171,73 @@ documented_agents = set(re.findall(r"`solodev:([a-z0-9-]+)`", readme)) & set(age
 for name in sorted(agents - documented_agents):
     err(f"README.md: agent {name!r} ships but is not documented")
 
+# the loop's deliverable must be committable. Run #1 shipped a .gitignore listing
+# specs/ and docs/; git commit would have exited 0 with the whole run's output absent.
+# Files AND directories. A directory-only check misses `*.txt`, which is enough to
+# swallow every evidence transcript while the two roots still look clean.
+roots = [r for r in ("specs", "docs") if (ROOT / r).exists()]
+if roots:
+    listed = subprocess.run(
+        ["git", "ls-files", "--cached", "--others", "--", *roots],
+        cwd=ROOT, capture_output=True, text=True,
+    )
+    deliverable = sorted({
+        *roots,
+        *(str(p.relative_to(ROOT)) for r in roots for p in (ROOT / r).rglob("*") if p.is_dir()),
+        *(l for l in listed.stdout.split("\n") if l.strip()),
+    })
+    # --no-index is load-bearing: without it git skips any path already in the
+    # index, so once specs/ is tracked the check silently passes forever. We are
+    # testing the ignore rule, not the current index state — a newly ignored path
+    # keeps its tracked files but swallows every new one in silence.
+    # --stdin keeps argv bounded; docs/evidence/ gains a directory every run.
+    found = subprocess.run(
+        ["git", "check-ignore", "--no-index", "--stdin"],
+        cwd=ROOT, capture_output=True, text=True, input="\n".join(deliverable),
+    )
+    # 0 = something matched, 1 = nothing matched. Anything else (128 outside a git
+    # repo) means the check did not run, which must not read as a pass.
+    if found.returncode not in (0, 1):
+        err(f"git check-ignore could not run ({found.stderr.strip() or 'unknown'}); "
+            f"the deliverable-not-ignored check did NOT execute")
+    for path in sorted({p for p in found.stdout.split("\n") if p.strip()}):
+        err(
+            f".gitignore excludes {path}, which protocol §2 and §6 require every "
+            f"run to commit. A commit would succeed with it missing, and say nothing"
+        )
+
 # a claim about how many agents cannot edit must match the frontmatter
 no_edit = {n for n in agents if "Edit" in frontmatter(ROOT / "agents" / f"{n}.md").get("disallowedTools", "")}
-for path in (ROOT / "README.md", ROOT / "skills/loop/SKILL.md"):
+for path in (ROOT / "README.md", ROOT / "skills/loop/SKILL.md", ROOT / "docs/architecture.md"):
+    if not path.exists():
+        continue
     text = path.read_text()
     words = {"one": 1, "two": 2, "three": 3, "four": 4, "five": 5}
-    for claim, whole in re.findall(r"([Oo]ne|[Tt]wo|[Tt]hree|[Ff]our|[Ff]ive) of the (one|two|three|four|five)", text):
+    pat = r"(one|two|three|four|five) of the (one|two|three|four|five)"
+    for claim, whole in re.findall(pat, text, re.IGNORECASE):
         if words[claim.lower()] != len(no_edit) or words[whole] != len(agents):
             err(
                 f"{path.relative_to(ROOT)}: claims '{claim} of the {whole}' agents cannot edit, "
                 f"but {len(no_edit)} of the {len(agents)} have no edit tools"
             )
+
+# Branch naming, per protocol §3 Phase 8: <type>/<backlog-id>-<what-it-does>.
+# A WARNING, not an error: the validator runs on main, on release branches, and in
+# repos that never adopted the loop, none of which should fail the gate for this.
+branch = subprocess.run(
+    ["git", "rev-parse", "--abbrev-ref", "HEAD"],
+    cwd=ROOT, capture_output=True, text=True,
+)
+name = branch.stdout.strip()
+TYPES = ("feat", "fix", "refactor", "chore", "docs", "perf", "test")
+if branch.returncode == 0 and name not in ("main", "master", "HEAD"):
+    if not re.fullmatch(rf"({'|'.join(TYPES)})/[a-z]-?\d+-[a-z0-9-]+|({'|'.join(TYPES)})/[a-z0-9-]+", name):
+        warn(
+            f"branch {name!r} does not match <type>/<backlog-id>-<what-it-does> "
+            f"(§3 Phase 8). Types: {', '.join(TYPES)}"
+        )
+    elif not re.match(rf"({'|'.join(TYPES)})/[a-z]-?\d+-", name):
+        warn(f"branch {name!r} has no backlog id — it cannot be traced to a row")
 
 # --- report ---------------------------------------------------------------
 

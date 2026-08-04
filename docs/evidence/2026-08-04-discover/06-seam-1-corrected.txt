@@ -1,0 +1,57 @@
+===== SEAM 1 (corrected, final) =====
+
+Two corrections were needed before this seam was measured honestly.
+
+First (qa-runner, S2): transcript 01 ran the seam through an undisclosed grep
+-v and reported the filtered result as raw output.
+
+Second (pr-reviewer: blocker 1, major 1, major 2). Three faults:
+
+  a) The shipped command lived in a markdown table cell, so its alternation
+  was escaped as \|. Inside grep -E that is a LITERAL pipe — the command
+  searched for the string "(TODO|FIXME|HACK|XXX)" and could never match a real
+  marker.
+  b) The first correction was itself filtered: three undisclosed --include
+  flags and a grep -v, reported as a raw count.
+  c) It cited a SKILL.md line number the 80-column pass had already moved.
+
+All fixed. Every seam command now lives in a fenced block in SKILL.md §2,
+never in a table cell, which removes the escaping fault class rather than
+patching this one instance.
+
+MEASURED — the escape bug
+  $ grep -rnE '(TODO\|FIXME\|HACK\|XXX)' . --exclude-dir=.git
+    -> 2 hits   (as shipped; both merely quote the pattern)
+  $ grep -rnE '(TODO|FIXME|HACK|XXX)' . --exclude-dir=.git
+    -> 15 hits   (corrected)
+
+TRUE RAW COUNT, corrected command, nothing filtered: 15
+
+This number is a snapshot, and it drifts within the run itself: every
+transcript that discusses the marker words becomes a hit for the seam that
+searches for them. Regenerated as the last step of run #2, after all edits. A
+later sweep will get a different raw count for the same clean verdict —
+compare the REMAINDER below, not the raw total.
+
+DISCLOSED EXCLUSIONS — each named, counted, justified:
+  docs/evidence/                           9 hits
+      this loop's own transcripts, quoting the marker words while discussing
+      them
+  specs/LOOP.md                            2 hits
+      §1 invariant 2 and §7 DoD: "No new placeholders, stubs, or TODOs".
+      Policy prose
+  skills/loop/references/PROTOCOL.md       2 hits
+      the byte-identical template copy of the two lines above, not two
+      findings
+  skills/discover/SKILL.md                 1 hits
+      this run's own seam-1 command and table, matching itself
+  CHANGELOG.md                             1 hits
+      this run's own entry naming what seam 1 looks for
+  TOTAL EXCLUDED                          15 hits
+
+REMAINDER — genuine abandoned markers: 0
+  (none — seam 1 files 0 items)
+
+VERDICT: seam 1 files nothing. 01 reached the same verdict by accident: the
+command it ran could not have found a marker if one had existed. Run
+correctly, with every exclusion named and counted, it still files nothing.

@@ -26,13 +26,43 @@
   ~6,151 tokens with a per-section breakdown, which is what turned a 40% cut into a
   concrete plan instead of a hunch.)
 
-- `[verification]` If a run's deliverable is files, then before Phase 8 run
-  `git add -n` on every directory the run created and confirm git would actually stage
-  them. (from: run #1 — `.gitignore` had grown `specs/` and `docs/` mid-run. `git
-  commit` would have exited 0 with those directories absent, the report would have
-  claimed success, and the next session would have found an empty `specs/`. The whole
-  run's output, lost silently. Reading the diff would not have caught it; only running
-  git did.)
+- `[verification]` **Retired in run #3 — now enforced by code.** `scripts/validate.py`
+  runs `git check-ignore --no-index` against `specs/`, `docs/`, **and every directory
+  beneath them**, failing the gate if any is excluded. §4C requires deleting a rule
+  once code guards it. Proof it actually fails:
+  `docs/evidence/2026-08-04-skill-dedup/08-gate-subpath-fixed.txt`.
+  Scope note: the check covers the two trees the protocol mandates. A run that creates
+  a deliverable directory *outside* `specs/` and `docs/` is still on its own — say so
+  in the report if you ever do.
+
+- `[gates]` If you add a check to a quality gate, then break the thing on purpose and
+  watch the gate fail before you trust it — and break it the *narrowest* way, not the
+  most obvious. (from: run #3, twice over. First the check used plain `git
+  check-ignore`, which skips paths already in the index, so it passed on the injected
+  bug and would have shipped unable to fire at all. Then, fixed with `--no-index`, it
+  still only tested the literal roots: `qa-runner` broke it with `docs/evidence/`, one
+  level down, enough to swallow a whole run's Phase 4 output while the gate stayed
+  green. Both times the obvious injection passed and a narrower one exposed the hole.)
+
+- `[claims]` If a number describes a file the run is still editing, then do not retype
+  it into prose — state the direction and point at the generated file. (from: run #3 —
+  the SKILL.md size and the Phase 0 total were copied into `LOOP_STATE.md` and
+  `CHANGELOG.md`, then went stale three separate times: once when the measurement was
+  regenerated, once when propagating it changed the very files being measured, and
+  once more on the next edit. `pr-reviewer` found three mutually inconsistent copies
+  and a headline saving overstated by ~20%. A figure in a file that keeps changing is
+  wrong the moment it is written.)
+
+- `[refactor]` If a deletion candidate is a table row or a sentence with more than one
+  clause, **or turns on a quantifier**, then check each clause and the quantifier
+  separately — a phrase match is not proof. (from: run #3, twice. The audit collapsed
+  a two-clause row into one check, matched the first half against §3 Phase 1, marked
+  the whole row a duplicate, and deleted "deferred → it becomes the next run's first
+  candidate", which exists nowhere else — `qa-runner`, S1. Separately, the skill's
+  "**each agent's** prompt must carry…" was matched against the protocol's "**its**
+  prompt", which is scoped to one agent; a rule binding five agents was deleted and
+  the verification transcript certified it — `pr-reviewer`. The manual correction pass
+  only re-examined rows the script marked *keep*, so it never revisited a wrong *DUP*.)
 
 - `[docs]` If documentation states a command a user is expected to run, then run the
   command itself — not a check that its arguments look plausible. (from: run #1 —
@@ -49,6 +79,30 @@
   two files. Protocol §3 Phase 0.3, in the very file being measured, mandates six.
   The real figure is ~14,240, and the four uncounted files include the two that grow
   without any cap — which was the more important half of the problem.)
+
+- `[authoring]` If a shell command is going into a markdown file, then put it in a
+  fenced block, never in a table cell. (from: run #2 — a table cell must escape `|` as
+  `\|`, and that escape survives being copied into the shell. Inside `grep -E`, `\|`
+  is a *literal pipe*, so `(TODO\|FIXME\|HACK\|XXX)` searched for that exact string
+  and returned 2 hits where the working command returns 19. The flagship seam of a
+  brand-new skill could not have found anything, and the skill's own raw-hit-count
+  rule could not catch it, because the raw count really was 2. Note the sibling case:
+  the same escape in a *BRE* command — no `-E` — is correct alternation, so this fails
+  only in the ERE half.)
+
+- `[evidence]` If a transcript measures a repo that will contain that transcript, then
+  regenerate it as the last step before commit and say the number is a snapshot.
+  (from: run #2 — the seam-1 raw count moved 15 → 19 across three edits, because every
+  new sentence discussing `TODO` became a hit for the seam searching for `TODO`. Two
+  transcripts disagreed until the last one was regenerated.)
+
+- `[claims]` If a measurement has a flattering reading and an unflattering one,
+  then report both and say which question each answers. (from: run #4 — the release
+  cut `[Unreleased]` from ~1,175 tokens to 4, and grew `CHANGELOG.md` on disk from
+  ~1,066 to ~1,550, because a cut version section never leaves the file. I wrote
+  "CHANGELOG fell" and nearly shipped it. Also: every measurement since run #1 counted
+  the whole CHANGELOG where protocol §3 Phase 0.3 reads only `[Unreleased]` — four
+  runs measuring something other than what they claimed.)
 
 ## Recurring pitfalls
 

@@ -121,93 +121,56 @@ Record the detected commands in `specs/LOOP_STATE.md` so later runs skip detecti
 
 ### Work attached to the invocation
 
-Anything attached to the invocation — a feature, a bug report, an enhancement — is
-**classified and scored per §10 of the protocol before selection**, then added to the
-backlog with a type-prefixed id and its origin. It does not jump the queue merely by
-being the most recent thing said.
+Classified and scored per **protocol §10** before selection, then filed with a
+type-prefixed id and its origin. It does not jump the queue for being the most recent
+thing said. When it competes with the cadence, **§3 Phase 1** decides; an S1 bug is
+the only sanctioned override, per **§10**.
 
-| Attached as | Handling |
-|---|---|
-| Feature or enhancement | Scored normally; prioritised in Phase 1 **unless** this run falls on the audit/refactor cadence. Deferred → it becomes the next run's first candidate, and the report says so. |
-| Bug, severity S2/S3 | Scored with a severity bonus; competes on the same scale. |
-| **Bug, severity S1** (data loss, security, primary flow impossible) | Taken immediately. **Overrides the cadence and any inherited plan.** The override is recorded in the Run Log and the report. |
+One rule here lives only in this file: **a feature deferred by the audit/refactor
+cadence becomes the next run's first candidate, and the report says so.** §8 binds the
+next run to whatever plan the current run *chooses* to write, which is a weaker
+promise — it does not guarantee the deferred item is what gets written down. Without
+this, work can be pushed aside by cadence and quietly never come back.
 
-This is the only sanctioned way to break cadence.
+---
+
+## One run, one branch, one PR
+
+Branch naming, branching point, the draft-PR rule, and what to do without a remote are
+all **protocol §3 Phase 8**.
 
 ---
 
 ## Companion agents
 
-Audits run as **separate subagents**, never inline. An audit performed by the agent
-that wrote the code grades its own homework, and the protocol forbids approving in
-the pass that authored the change. Four of the five cannot edit files at all, so a
-finding can never be quietly fixed instead of reported.
+**Protocol §3 says which agent runs at which phase, on what condition, and what its
+findings oblige.** Phases 4, 5, and 8 each name their own; that table is not repeated
+here.
 
-Spawn them with the `Agent` tool:
+Four things about them live only in this file, because the protocol does not cover
+them:
 
-| Phase | `subagent_type` | Edits? | When |
-|---|---|---|---|
-| 4 — verification | `solodev:qa-runner` | yes (evidence) | **Every run**, including refactor runs, where the matrix narrows to regression and persistence |
-| 4 — verification | `solodev:bug-hunter` | no | **Only when the slice touched a trust boundary** — auth, input, data access, upload, external requests |
-| 5 — quality critique | `solodev:ux-auditor` | no | **Only when the slice touched a user-facing surface** |
-| 5 — quality critique | `solodev:ui-auditor` | no | Same condition; skipped together with `ux-auditor`, and the report says it skipped them and why |
-| 8 — before commit | `solodev:pr-reviewer` | no | **Every run**, against the working diff |
+- **Every agent's prompt must carry** the slice under test, how to run the artifact,
+  the tightest condition to test first, and where to write evidence. §3 Phase 4 says
+  this of `qa-runner` alone — "**Its** prompt must carry…" — and Phases 5 and 8 impose
+  no prompt requirement at all. An auditor left to guess what it is auditing produces
+  findings about the wrong thing, and that applies to all five.
 
-Send the ones that share a phase in a **single message** so they run concurrently:
-`qa-runner` with `bug-hunter` in Phase 4, `ux-auditor` with `ui-auditor` in Phase 5.
-They are independent and there is nothing to gain by serialising them.
-
-Implementation tiers — `fe`, `be` — and the backlog filer `task` are **skills, not
-agents**: they load inline in Phase 3, because building and filing are the run's own
-work, with nothing to isolate. Only the audits, which must not grade their own author,
-run as subagents.
-
-Each agent's prompt must carry: the slice under test, how to run the artifact, the
-tightest condition to test first, and where to write evidence. An agent that has to
-guess what it is auditing produces findings about the wrong thing.
-
-`pr-new` runs **inline**, not as a subagent — it acts rather than judges, and there
-is nothing to isolate.
-
-Their findings are not advisory:
-
-- `qa-runner` S1/S2 → fixed this run · S3 → backlog with origin
-- `bug-hunter` Critical/High → **S1**, overrides the cadence, fixed this run
-- `ux-auditor` severity 4 or `ui-auditor` blocker → **fails the rubric**, fixed this run
-- `pr-reviewer` blocker/major → fixed **before** the commit
-
-If a subagent returns nothing usable, or the agent type is unavailable because the
-plugin is only partially installed, **say so in the report and run that phase
-inline** — degraded but honest beats a phase silently skipped.
-
-### One run, one branch, one PR
-
-Each run works on its own branch and ends with a draft PR:
-
-```
-loop/run-<N>-<short-slug>
-```
-
-Branch from the default branch at the start of the run, once Phase 0 confirms a clean
-tree. The PR stays a **draft** — promoting it to ready is the user's decision, as is
-merging. If the repo has no remote or `gh` is unavailable, commit to the branch, say
-the PR step was skipped and why, and carry on.
+- **`task` loads inline**, alongside `fe` and `be`. §3 Phase 3 names only the two
+  implementation tiers, but filing is the run's own work too, with nothing to isolate.
+- **`pr-new` runs inline, not as a subagent.** §3 Phase 8 delegates to it without
+  saying where it runs. It acts rather than judges, so there is nothing to isolate.
+- **If a subagent returns nothing usable, or its type is unavailable because the
+  plugin is only partially installed, say so in the report and run that phase
+  inline.** Degraded but honest beats a phase silently skipped. The protocol assumes
+  a complete install; this is what to do when that assumption fails.
 
 ---
 
 ## MEMORY (always on, two layers that must not overlap)
 
-Both layers are written every run. The split is strict so they never drift into two
-diverging copies:
-
-**Layer 1 — state files in the repo** (committed, readable by teammates):
-
-| File | Contents |
-|---|---|
-| `specs/LOOP_STATE.md` | scored backlog, current task + its DoD, Run Log, detected stack, **next-iteration plan** |
-| `specs/LOOP_LEARNINGS.md` | binding rules learned so far (150 lines max) |
-| `specs/REFERENCE.md` | cached external API/patterns, so they are not re-read each run |
-| `docs/evidence/<date>-<task>/` | Phase 4 verification evidence |
+Both layers are written every run. **Protocol §2 lists layer 1** — the state files in
+the repo — and hands layer 2 to this file by name.
 
 **Layer 2 — Claude Code memory** (the memory directory named in the running
 session's system prompt, plus `MEMORY.md` as its index). It holds **only what is not

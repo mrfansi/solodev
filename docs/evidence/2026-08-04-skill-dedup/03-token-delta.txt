@@ -1,0 +1,33 @@
+PHASE 0 READ COST — generated, run #3
+
+The six files read before any work happens. specs/LOOP.md and
+skills/loop/SKILL.md load via the skill mechanism (NORMAL mode step 1); the
+other four are named by protocol §3 Phase 0.3. Earlier drafts miscited all six
+to §3 Phase 0.3. Estimator: bytes/4, same as runs #1 and #2.
+
+  file                         run #1   run #3
+  specs/LOOP.md                  6151     6151
+  skills/loop/SKILL.md           2920     2410
+  specs/LOOP_STATE.md            2552     6131
+  README.md                      1314     1344
+  specs/LOOP_LEARNINGS.md         750     1554
+  CHANGELOG.md                    553     1236
+  TOTAL                         14240    18826
+
+skills/loop/SKILL.md : 11679 -> 9641 B   saved ~510 tok/run
+PHASE 0 TOTAL        : 14240 -> 18826 tok   ROSE ~4586 (+32%)
+
+The refactor worked and the cost still rose. LOOP_STATE.md and CHANGELOG.md
+are uncapped and grew far more than SKILL.md shrank. R-3 is rescored 10.0 ->
+20.0 and is the top actionable item.
+
+Four corrections behind this file, all recorded rather than folded away. (1)
+The first draft printed the rise as a negative, reading like a saving. (2) The
+second was measured mid-run and understated it — qa-runner filed S2, and it
+broke this run's own [evidence] rule to regenerate last. (3) The third was
+right but its numbers were never propagated, leaving three mutually
+inconsistent copies in LOOP_STATE.md and CHANGELOG.md — pr-reviewer blocker 2.
+(4) Propagating them failed too, because every edit to those files changed the
+number again. The fix was to stop copying figures into prose at all: the
+always-read files now state the direction and point here. This file is
+generated after every other edit.

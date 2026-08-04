@@ -60,8 +60,31 @@ When adding a rule, ask which of these it is:
 
 **Never in two places.** The invariants used to live in both `skills/loop/SKILL.md`
 and the protocol; they were consolidated into protocol §1 because two copies of a rule
-drift and the reader cannot tell which one is current. That consolidation is the model
-for every future one.
+drift and the reader cannot tell which one is current.
+
+Run #3 finished that job: the agent-per-phase table, the work-intake and severity
+table, the branch-and-draft-PR rules, and the layer-1 state-file table all moved to
+pointers. **Five clauses survived** because they exist nowhere else.
+
+**The method needs a warning attached, because run #3's own execution of it failed
+twice.** The rule is: grep every candidate against `specs/LOOP.md` before deleting it,
+and keep anything absent. Two rules were deleted anyway, and neither was caught by the
+grep:
+
+- A **two-clause table row** was checked as one claim. Its first half was in §3
+  Phase 1; its second half — a feature deferred by the cadence becomes the next run's
+  first candidate — was nowhere. `qa-runner` filed it S1.
+- A **quantifier** was not read. The skill said "**each agent's** prompt must carry…";
+  the protocol says "**its** prompt", scoped to one agent. A phrase match found the
+  sentence and certified the deletion. `pr-reviewer` caught it.
+
+So: **split multi-clause rows before grepping, and match the quantifier, not just the
+phrase.** A grep that finds similar words is not proof the rule survives. Both rules
+were restored; both failures are recorded in `specs/LOOP_LEARNINGS.md`.
+
+`skills/loop/SKILL.md` now holds only what the protocol does not: scheduling, argument
+parsing, the bootstrap sequence, stack detection, layer-2 memory, and the five orphans
+above.
 
 ## Scheduling is the exception
 
@@ -71,10 +94,45 @@ deliberately *not* in the protocol: the protocol governs what happens inside a r
 and scheduling is what happens between them. A repo can adopt the protocol without
 adopting this plugin's scheduling.
 
-## What is deliberately missing
+## Two ways work enters the backlog
 
-Nothing in the plugin decides **what to build**. The loop can take a slice from
-backlog to draft PR with verification, audit, and review along the way — but the
-backlog is only ever fed by the user or by findings from a run's own verification.
-The product-thinking member of the "team" is not implemented. This is tracked as
-backlog item `F-1` rather than left as an unstated gap.
+`task` and `discover` look adjacent and are not. The difference is who decided the
+work exists:
+
+| Skill | Input | The decision it makes |
+|---|---|---|
+| `task` | a request a human already formed | how to classify, score, and queue it |
+| `discover` | the repository itself | **that a piece of work exists at all** |
+
+`task` cannot find anything — it files what you bring it. `discover` reads the seams
+where unfiled work accumulates (abandoned markers, documentation describing absent
+behaviour, findings named in evidence but never queued, blind spots in the quality
+gate, friction repeating in the Run Log, work git shows was abandoned) and turns the
+evidence into rows.
+
+They share one rulebook: `task` owns the type table, the id sequence, bug severity,
+the scoring formula, and the row format. `discover` points at those rules rather than
+carrying a second copy, for the same reason the invariants live only in protocol §1.
+
+## Where the boundary sits
+
+`ship` moved it, but did not remove it. The plugin now takes work all the way from an
+unfiled idea to a cut release: `discover` finds it, `task` files it, `loop` builds and
+verifies it, the audit tier judges it, `pr-new` proposes it, `ship` versions it.
+
+**Two steps remain deliberately outside**: tagging and pushing. Those are where a
+mistake reaches other people and stops being recallable. `ship` prepares everything, then
+prints the exact commands and stops — the person accountable for a public release
+should be the one who types it. `pr-new` draws the same line by opening PRs as drafts.
+
+This is the plugin's one consistent rule about power: **it will do any amount of work,
+and it will not take an irreversible outward-facing action on your behalf.** Run #1
+found the README's install command broken and could not fix it, because fixing it meant
+publishing the repo. It stayed an open S1 for two runs until the user authorised it.
+That is the boundary working, not the loop failing.
+
+What is still missing: nothing *notices* when a release is due. Protocol §3 Phase 8
+step 3 already requires one — "user-visible change → bump SemVer and move
+`[Unreleased]` into a version section" — but no gate enforces it, which is exactly how
+three runs shipped user-visible changes while the version sat at `0.1.0`. `ship` gives
+that rule a keeper; nothing yet reminds a run to call it.

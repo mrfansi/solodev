@@ -1,0 +1,25 @@
+STEP 3 — the three piles
+  CHANGE (the version is the file's subject):
+    .claude-plugin/plugin.json:4        version field
+    .claude-plugin/marketplace.json:13  version field
+    specs/LOOP_STATE.md:30              the Current state inventory line
+  LEAVE (historical record):
+    specs/LOOP_STATE.md:160,167,191     what run #4 found and planned, at the time
+    docs/architecture.md:137            the defect, as it stood
+  LEAVE (documentation about versioning):
+    skills/ship/SKILL.md:55,78          worked examples that name a version
+    scripts/validate.py:75              the 0.1.0 exemption, keyed to the old value
+
+STEP 3 — moved:
+    .claude-plugin/plugin.json        version 0.1.0 -> 0.2.0
+    .claude-plugin/marketplace.json   version 0.1.0 -> 0.2.0
+    specs/LOOP_STATE.md:30            v0.1.0 -> v0.2.0
+
+STEP 4 — cut the changelog
+    [Unreleased] -> ## [0.2.0] - 2026-08-04   (18 entries)
+    fresh empty [Unreleased] opened above it
+    git tag --list 'v*' is empty -> oldest release -> /releases/tag/ link is correct
+
+GATE after the cut:
+    skills: 12  agents: 5 (4 without edit tools)
+    OK

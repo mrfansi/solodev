@@ -1,0 +1,23 @@
+Check: is B-3's fix (the base-verification command in specs/LOOP_STATE.md)
+actually correct? Ground truth = actual number of Run Log entries.
+
+$ sed -n '/^## Run Log/,$p' specs/LOOP_STATE.md | grep -n '^Run #[0-9]* |'
+7:Run #1 | BOOTSTRAP: loop machinery + token baseline | ...
+8:Run #2 | F-1: /solodev:discover, the what-to-build teammate | ...
+9:Run #3 | R-2 SKILL.md dedup + C-4 gate checks | ...
+
+Ground truth: 3 Run Log entries (Run #4 is in progress, not yet logged).
+
+OLD command (the one B-3 replaced):
+$ grep -c "^Run #" specs/LOOP_STATE.md
+5
+(over-counts: matches prose lines 32 "Run #1 installed the loop machinery"
+and 283 "Run #3 executed it as written", in addition to the 3 real entries.
+Historically returned 7 at time of discovery — the file has grown since —
+but it is wrong on the CURRENT file too, just by a different margin.)
+
+NEW command (B-3's fix):
+$ sed -n '/^## Run Log/,$p' specs/LOOP_STATE.md | grep -c '^Run #[0-9]* |'
+3
+
+Result: 3 == 3. B-3's fix is CORRECT against the current file. PASS.
