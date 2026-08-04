@@ -67,11 +67,16 @@ would remove ~2,410 once. `LOOP_STATE.md` is now the second-largest read and ove
 the protocol itself on trend. `R-3` is rescored to **20.0** on this and is the top
 actionable item.
 
-**Where the work physically is:** three stacked branches, none merged.
-`loop/run-1-bootstrap` → `loop/run-2-backlog-discovery` → `loop/run-3-skill-dedup`,
-each branched from the one before. **`main` still contains no `specs/`.** The remote
-`origin` (`github.com/mrfansi/solodev`) is an **empty repository** — nothing has ever
-been pushed — so no PR exists for any run.
+**Where the work physically is:** published as of the run #3 ruling. `main` and all
+three loop branches are on `github.com/mrfansi/solodev`, with a stacked draft PR per
+run: **#1** run-1 → main, **#3** run-2 → run-1, **#4** run-3 → run-2. Merge in that
+order. All three stay drafts; promoting and merging are the user's.
+
+`main` itself still contains no `specs/` — it is the pre-loop tree until PR #1 merges.
+
+**Unrelated PR on the repo: #2**, opened by the `ecc-tools` GitHub App, not by this
+loop. It adds 741 lines of `.claude/`, `.codex/`, and `.agents/` config and is **not**
+a draft. The loop has not touched it and will not.
 
 **Branch the next run from the newest branch above, not from `main`.** From `main` the
 loop skill sees no `specs/LOOP.md`, selects BOOTSTRAP, and overwrites this file from
@@ -117,7 +122,7 @@ The Notes column always carries the **origin**.
 | C-6 | `pr-review` is the one skill named in no `docs/flows/` file. Give it a flow doc, or state in `docs/README.md` why the review flow does not need one | 1 | 3 | 1 | 3.0 | **Found by discovery, run #2, seam 2.** Cite: `docs/evidence/2026-08-04-discover/03-seam-2-corrected.txt`, "skills with no flow doc mentioning them: pr-review". **Narrowed after run #2 review:** originally filed as "11 skills, 1 flow doc" against §6's "one file per major user flow". `pr-reviewer` rejected the framing — a skill is not a flow, and reading it as one would commission ten always-resident documents in a repo whose three top refactors all exist to cut per-run read cost. The one-skill gap is what the evidence actually supports |
 | C-7 | `skills/task/SKILL.md:88` writes a report score with the `×` and `÷` glyphs; `discover` writes the same score in ASCII. ASCII is the safer choice in a terminal, so `task` is the side that should move | 1 | 3 | 1 | 3.0 | Found during run #2 Phase 5 by `ui-auditor` (major 2). Deliberately **not** fixed in run #2: `task` is outside the slice, and §11G sends unrelated improvements to the backlog rather than into this commit |
 | ~~B-1~~ | ~~`.gitignore` listed `specs/` and `docs/`, so every bootstrap commit would have silently contained nothing but `.gitignore` and `CHANGELOG.md`~~ | — | — | — | — | **S1. Fixed in run #1.** Found by `qa-runner` in Phase 4. Origin: the two lines were absent at Phase 0 and present by Phase 4 — added mid-run by something outside this run's edits |
-| B-2 | `README.md` install command named `mrfansi/claude-solodev`, which does not exist. **Half fixed** in run #1: it now names `mrfansi/solodev`, the repo that does exist — but that repo is **empty**, so `/plugin marketplace add mrfansi/solodev` still fails. The name is right; the content is not there | 5 | 4 | 1 | 20.0 | **S1, still open.** Found by `qa-runner` (wrong name) and `pr-reviewer` (empty repo) in run #1. Closing it means pushing this repo to `origin` — an outward-facing first publication, so it is the **user's call**, not the loop's. Cannot be closed by a loop run alone |
+| ~~B-2~~ | ~~`README.md` install command named a repo that does not exist, then a repo that was empty, so `/plugin marketplace add` failed either way~~ | 5 | 4 | 1 | 20.0 | **S1, CLOSED after run #3 on the user's authorisation to publish.** `main` and all three loop branches pushed to `github.com/mrfansi/solodev`; `.claude-plugin/marketplace.json` now resolves on `main`, so the documented install command works. Open for two runs because closing it required an outward-facing first publication the loop must not do unasked |
 | R-3 | `specs/LOOP_STATE.md` and `CHANGELOG.md` are read every run and grow every run, with no cap on either. Give the Run Log and the backlog a roll-off rule the way `LOOP_LEARNINGS.md` has its 150-line cap | 5 | 5 | 1.25 | 20.0 | Found run #1 by `pr-reviewer`. **Rescored 10.0 → 20.0 in run #3 on three runs of measurement.** `LOOP_STATE.md` more than doubled in two runs and is now the second-largest Phase 0 read, close behind the protocol itself. Despite run #3 shrinking `SKILL.md`, the total Phase 0 read **rose** by roughly 30%. The growing half dominates the fixed half. Figures regenerate each run — see `docs/evidence/2026-08-04-skill-dedup/03-token-delta.txt` rather than any number retyped here |
 | C-3 | Protocol §3 Phase 4 and §10 give **contradictory** S1 rules: §3 says "S1 and S2 findings are fixed in this run before the phase completes"; §10 says an S1 found mid-run means "stop, report it, and let the user decide". Run #1 acted on the §3 reading twice without noticing | 3 | 3 | 1 | 9.0 | Found during run #1 Phase 8 by `pr-reviewer`. This is a real Run Log failure, so it is a valid target for a §4D protocol patch on the run #5 meta-review |
 
