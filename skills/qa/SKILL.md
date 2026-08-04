@@ -1,6 +1,6 @@
 ---
 name: qa
-description: Test and audit a change as a QA engineer — build a test matrix, execute it against the real artifact, and file reproducible bug reports with severity. Use when the user asks to QA something, test a feature, verify a fix, hunt for edge cases, or audit test coverage. Also invoked by the loop skill during verification. Works for CLI, TUI, web, API, and library changes.
+description: Test a change as a QA engineer — build a test matrix, execute it against the real artifact, file reproducible bugs with severity. Use when asked to QA, test, or verify something, or to audit test coverage. Also invoked by the loop skill during verification.
 ---
 
 # qa

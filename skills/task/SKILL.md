@@ -1,6 +1,6 @@
 ---
 name: task
-description: File a feature, bug, enhancement, refactor, or chore into the loop backlog without starting a run. Use when the user reports a bug, requests a feature, or wants something remembered for later — "add this to the backlog", "file this", "note this for the next iteration". Classifies the work, scores it, and shows where it lands in the queue.
+description: File a feature, bug, enhancement, refactor, or chore into the loop backlog without starting a run — classified, scored, queued. Use when the user reports a bug, requests a feature, or says to remember or file something for later.
 ---
 
 # task

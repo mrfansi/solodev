@@ -1,6 +1,6 @@
 ---
 name: discover
-description: Find work the repo already proves is needed but nobody filed — abandoned markers, promises the docs make that no code keeps, findings named in past runs but never queued, blind spots the quality gate cannot fail on. Use when the backlog is thin, before planning, or when asking "what should I build next". Files what it finds; every item cites evidence.
+description: Find work the repo already proves is needed but nobody filed — abandoned markers, doc promises no code keeps, findings never queued. Use when the backlog is thin, before planning, or when asking what to build next. Files what it finds; every item cites evidence.
 ---
 
 # discover
@@ -67,12 +67,15 @@ where the working command returns 25.
 # seam 1 — abandoned markers. Substitute [area] for the final `.`
 grep -rnE '(TODO|FIXME|HACK|XXX)' .
 
-# seam 2 — promises with no keeper. Use `find`, never `ls`: ls is aliased to
-# eza/exa/lsd on many machines and its colour codes corrupt sort and comm.
-grep -rhoE 'solodev:[a-z][a-z-]*' README.md docs/ CHANGELOG.md specs/*.md \
-  skills/*/SKILL.md agents/*.md | sed 's/solodev://' | LC_ALL=C sort -u > /tmp/named
-{ find skills -mindepth 1 -maxdepth 1 -type d -exec basename {} \; ;
-  find agents -name '*.md' -exec basename {} .md \; ; } | LC_ALL=C sort -u > /tmp/ships
+# seam 2 — promises with no keeper. Compare what the docs NAME against what the
+# code SHIPS: commands, flags, endpoints, config keys, skill names. Adapt both
+# sides to this repo's layout — a CLI compares its README flags against the
+# argument parser; a plugin compares documented skill names against skills/*/.
+# Use `find`, never `ls`: ls is aliased to eza/exa/lsd on many machines and its
+# colour codes corrupt sort and comm.
+grep -rhoE '<pattern the docs use to name things>' README.md docs/ \
+  | LC_ALL=C sort -u > /tmp/named
+<list what actually ships, one per line> | LC_ALL=C sort -u > /tmp/ships
 comm -23 /tmp/named /tmp/ships   # named in docs, does not ship
 comm -13 /tmp/named /tmp/ships   # ships, never documented
 

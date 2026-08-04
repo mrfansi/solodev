@@ -1,6 +1,6 @@
 ---
 name: ux
-description: Audit user experience as a UX researcher — task flows, cognitive load, information architecture, error prevention and recovery. Use when the user asks for a UX audit, UX review, usability check, or asks why a flow feels confusing or hard to complete. Also invoked by the loop skill when a run touches a user-facing surface. Covers CLI, TUI, web, mobile, and API ergonomics.
+description: Audit user experience — task flows, cognitive load, information architecture, error prevention and recovery, on CLI, TUI, web, mobile, or API surfaces. Use for a UX audit, usability check, or a flow that feels confusing. Also invoked by the loop skill when a run touches a user-facing surface.
 ---
 
 # ux

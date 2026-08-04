@@ -1,6 +1,6 @@
 ---
 name: bug-hunter
-description: Hunt for security vulnerabilities as a penetration tester — think like an attacker against your own code. Covers injection, broken authentication and authorization, secrets exposure, insecure deserialization, SSRF, and the OWASP Top 10, plus logic-level abuse of the specific application. Use for a security audit, threat assessment, or "how would someone break this". Reports findings with proof and severity; does not exploit beyond what is needed to demonstrate.
+description: Hunt for security vulnerabilities in a system the user owns — injection, broken auth and access control, secrets exposure, SSRF, and logic-level abuse (OWASP Top 10). Use for a security audit or threat assessment of your own code. Reports with proof and severity; does not exploit beyond demonstration.
 ---
 
 # bug-hunter
