@@ -7,7 +7,27 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
-### Fixed
+### Changed
+
+- **`/solodev:discover` runs in a subagent.** A whole-repo sweep is thousands of lines
+  of grep output mined down to at most five backlog rows, and until now every one of
+  those lines landed in the context of whoever asked. The skill now sets
+  `context: fork` with `agent: general-purpose`, so the sweep happens in its own
+  context and only the report comes back. `background: false` keeps that report
+  arriving in the same turn — nothing changes for the person typing the command, and
+  it is why `/solodev:discover` now needs **Claude Code 2.1.218 or later**. How much
+  output this keeps out of your context is not yet measured against a real forked run,
+  so no figure is claimed here.
+
+### Internal
+
+- **The validator checks the three forking keys.** `context` must be `fork` if
+  present; `agent` and `background` are errors without it; `background` must be a
+  boolean; and a forked skill's `agent` must be a built-in or resolve to an
+  `agents/*.md` file. Forking into an agent that cannot edit files warns rather than
+  fails — correct for a read-only skill, wrong for one that writes its own output.
+  A typo in any of these keys is otherwise silent: the skill simply keeps running
+  inline, which is the exact behaviour the key was set to stop.
 
 - **Every skill prints a score the same way.** `task` and the two loop templates wrote
   `(Value 5 × Frequency 3 ÷ Size 1)` while `discover` wrote `(V5 x F3 / S1)` for the

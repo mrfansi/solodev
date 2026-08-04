@@ -1,6 +1,9 @@
 ---
 name: discover
 description: Find work the repo already proves is needed but nobody filed — abandoned markers, doc promises no code keeps, findings never queued. Use when the backlog is thin, before planning, or when asking what to build next. Files what it finds; every item cites evidence.
+context: fork
+agent: general-purpose
+background: false
 ---
 
 # discover

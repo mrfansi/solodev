@@ -109,6 +109,10 @@ so it stops when the session ends — the work does not.
 /plugin install solodev@solodev
 ```
 
+Needs **Claude Code 2.1.218 or later** — `/solodev:discover` runs in a subagent and
+relies on a frontmatter key added in that release. Every other skill works on earlier
+versions.
+
 Developing on it locally? Point the marketplace at the clone instead —
 `/plugin marketplace add /path/to/claude-solodev` — and run
 `python3 scripts/validate.py` before committing; it checks the manifests, every
