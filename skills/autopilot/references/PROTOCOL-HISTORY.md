@@ -56,3 +56,44 @@
   invariant says so, so moving them relocates the tokens instead of removing them.
   See `docs/evidence/2026-08-04-r3-roll-off/07-r1-remeasure.txt`.
 
+
+- **v1.13** — Phase 8 obeys the user, by the user, after running the plugin on a
+  repository of their own. Two changes, both reported from that use:
+
+  **§11F, and §3 Phase 8 step 1 with it.** The loop no longer spawns a reviewer over
+  its own diff. Review was mandatory before every commit; it is now the user's, run
+  by hand with `/solodev:pr-review` on the PR the loop opened. The reasoning given:
+  that skill is a manual tool, and a review nobody asked for is one nobody reads.
+  **What was traded is stated in §11F itself** rather than left implicit — nothing now
+  stands between the last quality gate and the commit, and the record that pass built
+  was 19 invocations with not one clean result. Removing a gate this productive is
+  the user's call to make, and they made it knowing the number.
+
+  **§3 Phase 8 gains a closing step: back to the branch Phase 0 recorded, then
+  `git pull --ff-only`.** A run
+  used to end parked on the branch it had just proposed, so the next run cut its
+  branch from unmerged work — every run carrying the previous one's diff, diverging
+  further each time. Recorded failure: a PR in this repo went from clean to
+  conflicted after three others merged ahead of it.
+
+  Two further changes came out of auditing the patch itself, both closing failure
+  modes the first draft created. Phase 8 now pulls `--ff-only`: a plain `pull` could
+  strand an unattended run mid-merge, conflict markers sitting in the files the user
+  works from, on the branch they work from — the tool breaking the thing it had just
+  returned them to. And Phase 0 now writes the branch name down, because Phase 8 reads
+  it back and a compaction otherwise takes it out of context with no unambiguous way
+  to re-derive it. §9's report gained a closing line naming the PR as unreviewed and
+  the branch the user is standing on, since the run report is the only artifact an
+  unattended user reliably reads.
+
+  **Both remaining guardrails were exceeded. The counts, rather than a story about
+  them:** §1 untouched, but **three** sections changed against a limit of two — §3,
+  §11, and one cell of §9's report template — and **net +12 lines** against a limit of
+  five. The §9 cell was forced: leaving it would have shipped a template asking every
+  run to report a step the same patch deleted. The lines are not forced, and one
+  attempt to trim to budget deleted a live rule out of Phase 0 before it was noticed
+  and put back. That is the failure the guardrail should have caught and did not:
+  arithmetic pressure on prose removes the cheapest sentence, not the least useful
+  one. Whether guardrail 2 should count a consequence that cannot be left behind, and
+  whether guardrail 3 wants a floor for audit-driven fixes, are questions for the next
+  meta-review — filed, not assumed.

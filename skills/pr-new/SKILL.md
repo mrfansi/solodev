@@ -88,9 +88,20 @@ Expected: <what they should see>
 ## Related
 
 Closes #<issue>
+
+---
+Not reviewed yet. `/solodev:pr-review` reads it and reports before you merge.
 ```
 
 Rules that decide whether the body is worth reading:
+
+- **Keep the "not reviewed yet" footer.** Nothing reviews a PR automatically, so
+  without it the reader has no way to tell an unreviewed PR from a reviewed one, and
+  the default assumption on a machine-opened PR is the wrong one. Drop the line only
+  once a review has actually been posted. This is not the workflow leak the rule below
+  forbids: whether a change has been reviewed is the reviewer's business, and the
+  by-hand test passes — a PR opened by hand would carry the same line for the same
+  reason.
 
 - **Never paste the diff into the body.** GitHub already renders it.
 - Drop empty sections rather than leaving them with "N/A" — noise costs attention.
