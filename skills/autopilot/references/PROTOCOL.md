@@ -1,4 +1,4 @@
-# LOOP PROTOCOL · v1.11
+# LOOP PROTOCOL · v1.12
 
 > This file is **the protocol source of truth for this repository**. The loop may
 > patch it (§4D). Do not overwrite it from the skill template unless asked.
@@ -87,7 +87,12 @@ own work — only judgement is isolated.
 
 1. `git status --short --branch` — confirm the branch and working directory are the
    intended ones. Mandatory, especially in a fresh session, after a resume, or
-   inside a worktree.
+   inside a worktree. Then, in **one** shell loop over `git branch -a --no-merged
+   <default>` (`-a`, or a fresh clone sees none; a branch and its `origin/` twin are
+   one hit), a **non-empty** `git diff <default>...<branch>` is a past run's slice
+   still missing from the product, whatever its Run Log line claims — an empty one is
+   a stale pointer. Each hit lands now or gets a backlog row; one that already has a
+   row stays quiet, and new ones are named on `CURRENT`.
 2. **If the working tree is dirty with an earlier run's uncommitted work, finish
    that run first** (its Phases 6→8) before selecting a new task. Work that passed
    the gates but was never committed can hang for days unnoticed.
