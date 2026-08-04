@@ -22,7 +22,7 @@ test -f specs/LOOP_STATE.md
 | State | What to do |
 |---|---|
 | Present | Append to the scored backlog |
-| Missing, but it is a git repo | The loop has not been bootstrapped. File it in `specs/LOOP_STATE.md` under a `## Scored backlog` heading, creating the file, so `/solodev:loop` picks it up on its first run |
+| Missing, but it is a git repo | The loop has not been bootstrapped. File it in `specs/LOOP_STATE.md` under a `## Scored backlog` heading, creating the file, so `/solodev:autopilot` picks it up on its first run |
 | Not a repo | Say so and ask where it should live rather than writing into an arbitrary directory |
 
 ## 2. Classify

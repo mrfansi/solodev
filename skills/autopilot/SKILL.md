@@ -1,12 +1,12 @@
 ---
-name: loop
-description: Run ONE iteration of a development loop whose state lives in the repo, then schedule the next iteration itself. Use when the user invokes /solodev:loop or asks to start, resume, or stop iterative development. Accepts an optional interval and an optional plan or request.
+name: autopilot
+description: Run ONE iteration of a development loop whose state lives in the repo, then schedule the next iteration itself. Use when the user invokes /solodev:autopilot or asks to start, resume, or stop iterative development. Accepts an optional interval and an optional plan or request.
 ---
 
-# loop
+# autopilot
 
 ```
-/solodev:loop [interval] [plan]
+/solodev:autopilot [interval] [plan]
 ```
 
 One invocation = **ONE full run**, Phase 0 through 10, in order, no skipping — then
@@ -19,14 +19,14 @@ verify are detected from the repo in Phase 0 — never assume a language or fram
 
 | Form | Meaning |
 |---|---|
-| `/solodev:loop` | Run once, then reschedule at a self-chosen pace |
-| `/solodev:loop 45m` | Run once, then every 45 minutes |
-| `/solodev:loop 2h fix the export bug` | Every 2 hours, with a request attached |
-| `/solodev:loop once add PDF export` | Run exactly once, no scheduling |
-| `/solodev:loop stop` | Cancel scheduling; no run |
+| `/solodev:autopilot` | Run once, then reschedule at a self-chosen pace |
+| `/solodev:autopilot 45m` | Run once, then every 45 minutes |
+| `/solodev:autopilot 2h fix the export bug` | Every 2 hours, with a request attached |
+| `/solodev:autopilot once add PDF export` | Run exactly once, no scheduling |
+| `/solodev:autopilot stop` | Cancel scheduling; no run |
 
 Parse the first token as an interval only when it matches `<n>m` / `<n>h` / `once` /
-`stop`. Anything else is part of the plan — `/solodev:loop 3 bugs from testing` is a
+`stop`. Anything else is part of the plan — `/solodev:autopilot 3 bugs from testing` is a
 request, not an interval.
 
 ## Scheduling the next run
@@ -52,7 +52,7 @@ that silently fails to reschedule looks identical to one that never ran.
 
 **Be honest about the limits:** scheduling is session-only, and cron jobs also expire
 after 7 days. Say this once when scheduling starts. It costs little, because the
-loop's state lives in the repo — a fresh session only needs `/solodev:loop` again to
+loop's state lives in the repo — a fresh session only needs `/solodev:autopilot` again to
 pick up exactly where the last one stopped.
 
 ---

@@ -151,10 +151,10 @@ for path in md_files:
             err(f"{path.relative_to(ROOT)}: references solodev:{ref}, which is neither a skill nor an agent")
 
 # files the loop skill copies at bootstrap must exist
-loop = ROOT / "skills/loop/SKILL.md"
+loop = ROOT / "skills/autopilot/SKILL.md"
 for ref in set(re.findall(r"`references/([A-Za-z0-9_.-]+)`", loop.read_text())):
     if not (loop.parent / "references" / ref).exists():
-        err(f"skills/loop/SKILL.md: references/{ref} does not exist")
+        err(f"skills/autopilot/SKILL.md: references/{ref} does not exist")
 
 # README table must list exactly the shipped skills and agents
 readme = (ROOT / "README.md").read_text()
@@ -196,7 +196,7 @@ else:
 
 # a claim about how many agents cannot edit must match the frontmatter
 no_edit = {n for n in agents if "Edit" in frontmatter(ROOT / "agents" / f"{n}.md").get("disallowedTools", "")}
-for path in (ROOT / "README.md", ROOT / "skills/loop/SKILL.md", ROOT / "docs/architecture.md"):
+for path in (ROOT / "README.md", ROOT / "skills/autopilot/SKILL.md", ROOT / "docs/architecture.md"):
     if not path.exists():
         continue
     text = path.read_text()

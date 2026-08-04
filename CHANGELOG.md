@@ -7,6 +7,12 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Changed
+
+- **The loop skill is now `/solodev:autopilot`.** `skills/loop/` renamed to
+  `skills/autopilot/`; every invocation and path reference updated. Behaviour is
+  unchanged — same protocol, same state files in `specs/`.
+
 ### Added
 
 - **`/solodev:graph` — the teammate who has read the whole codebase.** Builds a
