@@ -7,6 +7,24 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- **`/solodev:graph` — the teammate who has read the whole codebase.** Builds a
+  greppable knowledge graph under `specs/graph/` (inspired by
+  [graphify](https://github.com/Graphify-Labs/graphify)): a ≤100-line index with god
+  nodes and module edges, one ≤60-line card per module, every claim marked
+  `EXTRACTED` with a `file:line` or `INFERRED` — never one dressed as the other.
+  Builds fan out one `solodev:code-mapper` subagent per module (at most 10),
+  each writing its own card and returning only its index row; updates re-map only
+  the modules `git diff` says changed since the stamped `Built-at` commit. Queries
+  read the index, open 1–2 cards, and verify every asserted claim against live code
+  before answering — the map narrows the search, grep confirms it — and fix any card
+  the code contradicts in the same pass.
+- **Protocol v1.7 wires the map into the loop, optionally.** Phase 0 reads
+  `GRAPH.md` when it exists instead of re-exploring; Phase 3 starts the call-site
+  inventory from the `Used by` edges, grep-verified; §4B refreshes the cards of
+  modules the run touched. No phase fails when the map is absent.
+
 ### Fixed
 
 - **An agent's findings could vanish if it spawned helpers of its own.** A helper

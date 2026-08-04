@@ -1,4 +1,4 @@
-# LOOP PROTOCOL · v1.6
+# LOOP PROTOCOL · v1.7
 
 > This file is **the protocol source of truth for this repository**. The loop may
 > patch it (§4D). Do not overwrite it from the skill template unless asked.
@@ -50,6 +50,7 @@ User satisfaction outranks feature completeness.
 | `specs/LOOP_STATE.md` | scored backlog, current task + DoD, Run Log, stack, next plan | yes, every run |
 | `specs/LOOP_LEARNINGS.md` | binding rules (150 lines max) | yes, every run |
 | `specs/REFERENCE.md` | cached external API/patterns | yes, incrementally |
+| `specs/graph/**` | the code map: module cards, god nodes (`graph` skill) | yes, modules touched |
 | `README.md` | how to use the product | yes, every run (§6) |
 | `CHANGELOG.md` | the `[Unreleased]` section | yes, every run (§6) |
 | `docs/**` | flow and architecture documentation | yes, every run (§6) |
@@ -91,7 +92,8 @@ own work — only judgement is isolated.
    the gates but was never committed can hang for days unnoticed.
 3. Read in order: `specs/LOOP_LEARNINGS.md` (**binding**) → `specs/LOOP_STATE.md`
    (including the **next-iteration plan** left by the previous run) →
-   `CHANGELOG.md` `[Unreleased]` → `README.md`.
+   `CHANGELOG.md` `[Unreleased]` → `README.md` → `specs/graph/GRAPH.md` if
+   present (the code map — do not re-explore what it already answers).
 4. Read Claude Code memory for context that is not in the repo.
 
 **Output of this phase — exactly 4 lines:**
@@ -156,8 +158,10 @@ without asking questions; "works well" is not a criterion.
 
 **Before editing:** list EVERY path and caller that touches the behaviour being
 changed (grep function names, types, routes, screens) and write the list into
-`specs/LOOP_STATE.md`. Editing one path and discovering the second one later is
-rework that five minutes of searching prevents.
+`specs/LOOP_STATE.md`. When `specs/graph/` exists, start from its `Used by`
+edges, then verify with grep — the map narrows the search; grep confirms it.
+Editing one path and discovering the second one later is rework that five
+minutes of searching prevents.
 
 Follow `specs/LOOP_LEARNINGS.md` as a checklist, not as advice, and **§11
 Engineering practices** as binding rules. For a bug task, §11B applies from the
@@ -315,6 +319,10 @@ Hypotheses, hunches, and "we should probably later…" are **not** rules.
 **Claude Code memory** is written in this phase too: product decisions not captured
 in code, the user's working preferences with their reasoning, and external
 references used. Never copy state-file contents into it.
+
+**The code map** is refreshed here when `specs/graph/` exists: re-map the modules
+this run touched (`graph` skill, update mode). A map that lags the code misleads
+the next run worse than no map would.
 
 ### C. Prune (keep the loop from bloating)
 - Merge duplicate or adjacent rules.
@@ -605,3 +613,7 @@ decide whether to finish the current slice first.
   Phases 4/5/8 alike; Phase 6 enforces the §2 untracked-workspace rule; §4C prunes
   `LOOP_STATE.md`; §8 owns the deferred-feature guarantee; §10 S3 wording aligned
   with the `task` and `qa` skills.
+- **v1.7** — the code map (`graph` skill), by the user: §2 lists `specs/graph/**`;
+  Phase 0 reads `GRAPH.md` when present; Phase 3 starts the call-site inventory
+  from its `Used by` edges, grep-verified; §4B refreshes touched modules' cards.
+  The map is optional — no phase fails for its absence.
