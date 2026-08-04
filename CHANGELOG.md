@@ -7,6 +7,21 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Changed
+
+- **The protocol's patch history moved out of the protocol — v1.10.** §12 is now a
+  five-line pointer; the entries live in `skills/autopilot/references/PROTOCOL-HISTORY.md`,
+  and a patch made in your own repo appends to `specs/LOOP_ARCHIVE.md` instead. The
+  history had reached a tenth of the whole protocol while governing no phase — every
+  run read it, and only a §4D run (one in five) had any use for it.
+
+  This is `R-1` in part. **The rest of `R-1` was measured and rejected**: the plan was
+  to move §5–§12 out of the start-of-run read entirely, on a claim that it would cut
+  40%. Remeasuring showed the claim counted the *size* of those sections and never
+  their *frequency* — six of the eight are needed by every single run, four because an
+  invariant says so. Moving them relocates tokens between phases instead of removing
+  them. Only §12 was genuinely cold, and only §12 moved.
+
 ### Added
 
 - **CI runs the validator.** `.github/workflows/validate.yml` executes

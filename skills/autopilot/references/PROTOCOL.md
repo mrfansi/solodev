@@ -1,4 +1,4 @@
-# LOOP PROTOCOL · v1.9
+# LOOP PROTOCOL · v1.10
 
 > This file is **the protocol source of truth for this repository**. The loop may
 > patch it (§4D). Do not overwrite it from the skill template unless asked.
@@ -365,7 +365,8 @@ Metric  : expect <metric> to improve from X to Y
 2. One patch changes at most 2 sections.
 3. The protocol may not bloat: adding >5 lines requires deleting as many.
 4. A patch is only valid if it points at a **real failure recorded in the Run Log**.
-5. Bump the protocol version and record it in §12.
+5. Bump the protocol version in the title, and append the entry where §12 says —
+   never into this file.
 
 ### E. Failure protocol
 - The same task failing **2 runs in a row** → split it smaller and write a rule about
@@ -612,39 +613,14 @@ stop to ask.
 
 ## §12 PROTOCOL HISTORY
 
-- **v1.0** — initial protocol, bootstrapped from the `dev-loop` skill.
-- **v1.1** — §1 absorbed the three skill-only invariants; §3 Phase 1: stacked cadences.
-- **v1.2** — §3 Phase 1: a standing feature directive outranks the cadence's
-  *prohibition*, not its choice of slice (user ruling, `C-5`).
-- **v1.3** — §3 Phase 8: branches are `<type>/<backlog-id>-<what-it-does>` (user
-  directive).
-- **v1.4** — §2: `specs/` and `docs/` never committed; §6: nothing about the loop in
-  `README.md`/`CHANGELOG.md` unless the workflow tooling *is* the product. From live
-  use: the plugin was contaminating the repos it ran in.
-- **v1.5** — §3 Phase 8: PRs open **ready**, not draft. Opening is reversible,
-  merging is not, and merging was already the user's.
-- **v1.6** — ambiguity + token pass, by the user: invariant 5 scopes README to §6's
-  usage test; the subagent prompt rules moved from the skill into §3 and now cover
-  Phases 4/5/8 alike; Phase 6 enforces the §2 untracked-workspace rule; §4C prunes
-  `LOOP_STATE.md`; §8 owns the deferred-feature guarantee; §10 S3 wording aligned
-  with the `task` and `qa` skills.
-- **v1.7** — the code map (`graph` skill), by the user: §2 lists `specs/graph/**`;
-  Phase 0 reads `GRAPH.md` when present; Phase 3 starts the call-site inventory
-  from its `Used by` edges, grep-verified; §4B refreshes touched modules' cards.
-  The map is optional — no phase fails for its absence.
+Not kept here. The history is a decision trail, not a rule — no phase obeys it, and it
+had grown to a tenth of the Phase 0 read while governing nothing. Same split as
+`specs/LOOP_ARCHIVE.md`, same reason.
 
-- **v1.8** — roll-off, by the user: §2 adds `specs/LOOP_ARCHIVE.md`; §4C replaces
-  "prune the Run Log to its last 20 lines" with **move, never delete** — closed
-  backlog rows and Run Log entries older than the last three go to the archive,
-  which Phase 0 is told not to read. Both Phase 0 caps are now enforced by
-  `scripts/validate.py` (`LOOP_STATE.md` ≤ 14000 bytes, `LOOP_LEARNINGS.md` ≤ 150
-  lines). Recorded failure: the 150-line cap was prose for four runs and the file
-  was over it, unnoticed; `LOOP_STATE.md` more than doubled across three runs while
-  every refactor aimed at the fixed half of the read.
+- **The shipped protocol's own history** — every patch up to this version — is in
+  `PROTOCOL-HISTORY.md`, beside this file in the `autopilot` skill's `references/`.
+- **A patch you make in your repo** goes to `specs/LOOP_ARCHIVE.md`, under a
+  `## Protocol history` heading. Create it if it is not there.
 
-- **v1.9** — the S1 contradiction (`C-3`), by the user: §3 Phase 4 said S1 and S2
-  findings "are fixed in this run", §10 said an S1 found mid-run means "stop, report
-  it, and let the user decide". Both now scope themselves: **in-slice** S1/S2 are
-  fixed by Phase 4; an **out-of-slice** S1 stops the run per §10. Recorded failure:
-  run #1 acted on the §3 reading twice without noticing the other rule existed —
-  found by `pr-reviewer` in run #1 Phase 8 and open for five runs.
+Read either only when you need to know why a rule reads the way it does. Never at
+Phase 0.
