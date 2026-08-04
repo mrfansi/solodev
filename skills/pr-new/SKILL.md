@@ -123,9 +123,20 @@ Report the PR URL when done.
 ## Never leak the workflow
 
 A PR body is read by whoever reviews the product. **Do not name the loop, a run
-number, a backlog id, or a phase in it.** Describe the change and why it was made —
-identical to what you would write if you had made it by hand. The loop's bookkeeping
+number, a backlog id, a phase, or patch arithmetic in it.** The loop's bookkeeping
 lives in `specs/LOOP_STATE.md`, which is not committed.
+
+The test is protocol §6's: **would this line still belong if the change had been made
+by hand?** "PRs now open ready for review instead of as drafts" passes — the product
+changed.
+"Guardrails: §1 untouched, net +5 lines" does not; that is proof you followed your own
+process, and no reviewer asked for it.
+
+§6's exception applies here too. In a repo whose *product is the workflow tooling*, a
+PR that changes the protocol describes the protocol, because the protocol is what
+ships. The by-hand test still decides line by line, and it still rejects the
+bookkeeping — which is how a real PR on this repo shipped a guardrail tally before an
+audit caught it.
 
 ## When the loop skill invokes this
 

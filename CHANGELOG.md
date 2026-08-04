@@ -27,7 +27,24 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   Figures live in the dated evidence directory rather than here, because transcripts
   keep growing and a number pasted into a changelog is wrong by the next session.
 
+- **`/solodev:pr-review` now posts its findings to the pull request** as a `COMMENTED`
+  review, instead of leaving the verdict in a session that ends. The review sits where
+  the next reader finds it.
+
+  It posts `COMMENTED` because that is the only state GitHub permits on a pull request
+  you opened yourself — `--approve` and `--request-changes` are both rejected outright.
+  So `approved` and `changes_requested` never appear on a solo developer's own PR, with
+  or without this plugin, and the skill now says so rather than letting the absence read
+  as a failure. On someone else's PR `--request-changes` is used when a blocker
+  survives; approval is left to a human.
+
 ### Changed
+
+- **`/solodev:pr-new` carries the one exception to its own rule.** It forbids workflow
+  detail in a PR body — run numbers, phases, patch arithmetic — but the ban had no
+  exception written beside it, which made it simultaneously too strict to follow in a
+  repo whose product *is* the workflow tooling and too vague to catch the real leak.
+  The exception is now stated where the rule is, with the by-hand test that decides it.
 
 - **Protocol v1.11: prune before you add.** §4C used to say pruning is what you do
   when a cap fails. That turned every cap into a mid-edit interruption — check the
@@ -298,9 +315,9 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   ignored the quantifier ("each agent's" against the protocol's "its"). The
   grep-before-delete method needs both guards; see `docs/architecture.md`.
 - `.gitignore` now carries a comment stating that `specs/` and `docs/` must stay
-  tracked. Run #1 found both directories ignored in its working tree, which would
-  have produced a bootstrap commit containing none of the machinery it installed —
-  with no error. The bad lines were never committed, so this is a guard, not a fix.
+  tracked. They had been ignored in a working tree, which would have produced a
+  commit containing none of the machinery it claimed to install — with no error. The
+  bad lines were never committed, so this is a guard, not a fix.
 - The eleven invariants now live only in protocol §1. `skills/loop/SKILL.md` points
   at them instead of keeping a second copy that could drift.
 - Protocol §3 Phase 1 states what happens when the audit cadence and the meta-review
