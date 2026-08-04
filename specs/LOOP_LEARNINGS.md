@@ -96,6 +96,14 @@
   new sentence discussing `TODO` became a hit for the seam searching for `TODO`. Two
   transcripts disagreed until the last one was regenerated.)
 
+- `[claims]` If a measurement has a flattering reading and an unflattering one,
+  then report both and say which question each answers. (from: run #4 — the release
+  cut `[Unreleased]` from ~1,175 tokens to 4, and grew `CHANGELOG.md` on disk from
+  ~1,066 to ~1,550, because a cut version section never leaves the file. I wrote
+  "CHANGELOG fell" and nearly shipped it. Also: every measurement since run #1 counted
+  the whole CHANGELOG where protocol §3 Phase 0.3 reads only `[Unreleased]` — four
+  runs measuring something other than what they claimed.)
+
 ## Recurring pitfalls
 
 _(filled when the rubric fails 3 iterations, or the same task fails 2 runs in a row)_
