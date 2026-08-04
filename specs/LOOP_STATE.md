@@ -296,6 +296,7 @@ One line per run. Format:
 ```
 Run #1 | BOOTSTRAP: loop machinery + token baseline | 0 iterations | rubric n/a (no user-facing slice) | rework: no | gate failures: 0 | 2×S1 found by qa-runner and fixed in-run (B-1 .gitignore, B-2 README install target)
 Run #2 | F-1: /solodev:discover, the what-to-build teammate | 1 iteration | rubric 10→15 of 16 | rework: yes (seam-1 command was broken by a markdown table escape; transcript regenerated 3× as its own measurement drifted) | gate failures: 0 | 1 blocker + 4 majors from pr-reviewer, 2 blockers from ui-auditor, S2+S3 from qa-runner — all fixed pre-commit | deviated from the inherited plan on the user's standing directive, R-2 carried forward
+Run #4 | F-2 /solodev:ship + B-3 + B-4 | rubric n/a (see note) | rework: yes (bump clause ambiguous; version search missed a file, then a file type; changelog gate passed 3 narrow breaks) | gate failures: 0 | qa-runner: S1+S2+2xS3. pr-reviewer: 2 blockers + 2 majors | SHIPPED A FEATURE and cut release 0.2.0, the repo's first
 Run #3 | R-2 SKILL.md dedup + C-4 gate checks | rubric n/a (pure refactor, ux+ui skipped per §3 Phase 5) | rework: yes, heavily (2 rules deleted and restored; the gate check rebuilt 4× before it could fail correctly; the token measurement regenerated 4× and then removed from prose entirely) | gate failures: 0 | qa-runner: 2×S1 + S2 + S3. pr-reviewer: 2 blockers + 4 majors + 4 minors. All fixed pre-commit | SHIPPED NO FEATURE — cadence run, C-5 still unruled, run #2's provisional default applied
 ```
 
