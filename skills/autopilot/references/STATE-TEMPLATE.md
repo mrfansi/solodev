@@ -90,7 +90,7 @@ Risk        : <what could blow up the scope>
 
 The three most recent runs, newest first. One line per run and **no prose** — notes
 and older entries live in `specs/LOOP_ARCHIVE.md`. Format:
-`Run #N | task | rubric-iterations | score initial→final | rework? (cause) | gate failures`
+`Run #N | task | rubric-iterations | score initial→final | rework? (cause) | gate failures | cost <n>k tok / <n> turns / <n> subagents`
 
 ```
 ```

@@ -303,8 +303,13 @@ complying. Violating a recorded rule without a written reason is a regression.
 ### B. Record (after the quality gates)
 Append a **Run Log** entry to `specs/LOOP_STATE.md`:
 ```
-Run #N | task | rubric-iterations | score initial→final | rework? (cause) | gate failures
+Run #N | task | rubric-iterations | score initial→final | rework? (cause) | gate failures | cost <n>k tok / <n> turns / <n> subagents
 ```
+
+The cost field comes from `python3 scripts/token-cost.py`, run at this point and not
+guessed. It reads Claude Code's own transcript. **Turn count is the term that moves**
+— cost is the sum of the context size at every turn, so a token admitted early is
+re-billed by every turn after it. A run that reports no cost has skipped this phase.
 
 Then add **at least one new rule** to `LOOP_LEARNINGS.md`, OR state explicitly "no
 new lesson" with the reason.
