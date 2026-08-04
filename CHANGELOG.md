@@ -9,6 +9,21 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
+- **The loop's state file rolls off instead of growing forever — protocol v1.8.**
+  Closed backlog rows and Run Log entries older than the three most recent now
+  **move** to `specs/LOOP_ARCHIVE.md`, which the start of a run never reads. Moving,
+  not deleting: the decision trail behind a closed item is why the backlog keeps
+  closed rows at all. The Run Log itself is one line per run and carries no prose.
+  This replaces §4C's old "keep the last 20 lines" prune, which deleted what it
+  trimmed and contradicted the backlog's own rule.
+
+- **The two read-every-run caps are enforced by `scripts/validate.py`, not by prose.**
+  `specs/LOOP_STATE.md` fails the gate over 14000 bytes; `specs/LOOP_LEARNINGS.md`
+  over 150 lines. The 150-line cap had been claimed in a file header since the first
+  run and the file had been over it for four runs, unnoticed — a cap that cannot fail
+  is not a cap. Both budgets come from measurement, and both are skipped silently in
+  a repo where the loop has never run.
+
 - **The loop skill is now `/solodev:autopilot`.** `skills/loop/` renamed to
   `skills/autopilot/`; every invocation and path reference updated. Behaviour is
   unchanged — same protocol, same state files in `specs/`.

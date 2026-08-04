@@ -1,4 +1,4 @@
-# LOOP PROTOCOL · v1.7
+# LOOP PROTOCOL · v1.8
 
 > This file is **the protocol source of truth for this repository**. The loop may
 > patch it (§4D). Do not overwrite it from the skill template unless asked.
@@ -47,7 +47,8 @@ User satisfaction outranks feature completeness.
 | File | Contents | Written by the loop? |
 |---|---|---|
 | `specs/LOOP.md` | this protocol | only via a §4D patch |
-| `specs/LOOP_STATE.md` | scored backlog, current task + DoD, Run Log, stack, next plan | yes, every run |
+| `specs/LOOP_STATE.md` | scored backlog, current task + DoD, Run Log, stack, next plan (≤14000 bytes) | yes, every run |
+| `specs/LOOP_ARCHIVE.md` | closed backlog rows, Run Log entries older than the last three | roll-off only (§4C) |
 | `specs/LOOP_LEARNINGS.md` | binding rules (150 lines max) | yes, every run |
 | `specs/REFERENCE.md` | cached external API/patterns | yes, incrementally |
 | `specs/graph/**` | the code map: module cards, god nodes (`graph` skill) | yes, modules touched |
@@ -94,6 +95,8 @@ own work — only judgement is isolated.
    (including the **next-iteration plan** left by the previous run) →
    `CHANGELOG.md` `[Unreleased]` → `README.md` → `specs/graph/GRAPH.md` if
    present (the code map — do not re-explore what it already answers).
+   **Do not read `specs/LOOP_ARCHIVE.md` here.** Open it only when you need the
+   trail behind a specific closed item; reading it every run undoes the roll-off.
 4. Read Claude Code memory for context that is not in the repo.
 
 **Output of this phase — exactly 4 lines:**
@@ -329,10 +332,16 @@ the next run worse than no map would.
 - **Delete any rule now enforced by code, types, tests, or lint** — if the compiler
   guards it, the brain does not need to. Replace it with a pointer to the test.
 - `LOOP_LEARNINGS.md` caps at **150 lines**. Over the cap → cut the least-used rules.
-- `LOOP_STATE.md` is pruned the same way: the Run Log keeps its last **20** lines,
-  and a finished task's call-site inventory and DoD checklist are deleted once the
-  run is logged — the Run Log line is the record. Struck backlog rows stay (they are
-  the decision trail) but keep only id, title, and Notes.
+- `LOOP_STATE.md` **rolls off** to `specs/LOOP_ARCHIVE.md`, which Phase 0 never reads.
+  Move — never delete — a closed backlog row the moment it is struck, and every Run
+  Log entry older than the **three** most recent, its prose notes with it. The Run
+  Log itself is one line per run and holds no prose. A finished task's call-site
+  inventory and DoD checklist *are* deleted once the run is logged; the Run Log line
+  is their record.
+- **Both caps are enforced by `scripts/validate.py`, not by good intentions** — a cap
+  that lives only in prose cannot fail, and this one silently did for four runs.
+  The budgets: `LOOP_STATE.md` ≤ 14000 bytes, `LOOP_LEARNINGS.md` ≤ 150 lines.
+  Pruning is what you do when the gate fails, not a thing you remember to do.
 
 ### D. Meta-review (every 5 runs)
 Compute trends from the Run Log: is the rubric score rising? are iterations falling?
@@ -617,3 +626,12 @@ decide whether to finish the current slice first.
   Phase 0 reads `GRAPH.md` when present; Phase 3 starts the call-site inventory
   from its `Used by` edges, grep-verified; §4B refreshes touched modules' cards.
   The map is optional — no phase fails for its absence.
+
+- **v1.8** — roll-off, by the user: §2 adds `specs/LOOP_ARCHIVE.md`; §4C replaces
+  "prune the Run Log to its last 20 lines" with **move, never delete** — closed
+  backlog rows and Run Log entries older than the last three go to the archive,
+  which Phase 0 is told not to read. Both Phase 0 caps are now enforced by
+  `scripts/validate.py` (`LOOP_STATE.md` ≤ 14000 bytes, `LOOP_LEARNINGS.md` ≤ 150
+  lines). Recorded failure: the 150-line cap was prose for four runs and the file
+  was over it, unnoticed; `LOOP_STATE.md` more than doubled across three runs while
+  every refactor aimed at the fixed half of the read.
