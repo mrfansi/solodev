@@ -45,6 +45,34 @@ The audits ship as subagents too, so `loop` can run them in isolated contexts:
 Four of the six have no edit tools at all. An auditor that can patch what it finds
 tends to patch instead of report, and the finding never reaches the Run Log.
 
+## Hooks
+
+Installing the plugin installs one Claude Code hook. It is the only part of solodev that
+runs without being asked, so here is exactly what it does.
+
+**It blocks a `git commit` that would put the loop's workspace into git history** —
+`specs/`, which is the loop's own bookkeeping, and `docs/evidence/`, which holds raw
+transcripts of whatever a run happened to print. A credential in git history is
+permanent, and that is the one rule worth enforcing in code rather than trusting an
+agent to remember.
+
+It stays silent everywhere else, and "everywhere else" is most places:
+
+- a repository with no `specs/LOOP.md` never opted into the loop — nothing happens
+- a repository where the workspace is untracked — nothing happens. It tests what git
+  *tracks*, not what `.gitignore` says, because an already-tracked file stays tracked
+  no matter what you add to `.gitignore` afterwards
+- **your own `docs/` is yours.** The hook blocks only on `specs/` and `docs/evidence/`,
+  never on the documentation you wrote, even in a repo running the loop
+- any command that is not a commit, and any directory that is not a repository
+
+And if you commit your workspace deliberately, `SOLODEV_NO_GUARD=1` turns it off.
+
+When it does block, the message names the tracked files and gives you the two commands
+that fix it. Run `python3 hooks/guard-workspace.py --selfcheck` to watch it decide every
+case against throwaway repositories, or read
+[docs/flows/hooks.md](docs/flows/hooks.md) for the full behaviour.
+
 ## The loop
 
 ```

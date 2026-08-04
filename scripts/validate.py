@@ -105,6 +105,51 @@ else:
     if entry.get("description") != plugin.get("description"):
         warn("description differs between plugin.json and marketplace.json")
 
+# --- hooks ----------------------------------------------------------------
+
+# hooks/hooks.json is discovered by convention — no `hooks` key in plugin.json, same
+# as agents/. Nothing at runtime reports a hook that failed to load, and a hook that
+# never fires is indistinguishable from one that works, so the manifest is checked
+# here. Event names are the 31 in Claude Code's hooks reference (specs/REFERENCE.md).
+HOOK_EVENTS = {
+    "SessionStart", "Setup", "UserPromptSubmit", "UserPromptExpansion", "PreToolUse",
+    "PermissionRequest", "PermissionDenied", "PostToolUse", "PostToolUseFailure",
+    "PostToolBatch", "Notification", "MessageDisplay", "SubagentStart", "SubagentStop",
+    "TaskCreated", "TaskCompleted", "Stop", "StopFailure", "TeammateIdle",
+    "InstructionsLoaded", "ConfigChange", "CwdChanged", "DirectoryAdded", "FileChanged",
+    "WorktreeCreate", "WorktreeRemove", "PreCompact", "PostCompact", "Elicitation",
+    "ElicitationResult", "SessionEnd",
+}
+
+hooks_path = ROOT / "hooks/hooks.json"
+hooks_manifest = {}
+if not hooks_path.exists():
+    # Required, not optional: deleting the manifest is the narrowest way to stop every
+    # hook this plugin ships, and it left the gate green until a review said so.
+    err("hooks/hooks.json does not exist; the plugin ships a hook and this is the file "
+        "Claude Code discovers it by")
+else:
+    try:
+        hooks_manifest = json.loads(hooks_path.read_text())
+    except json.JSONDecodeError as exc:
+        err(f"hooks/hooks.json is not valid JSON: {exc}")
+if not (hooks_manifest.get("hooks") if isinstance(hooks_manifest, dict) else None):
+    if hooks_path.exists():
+        err("hooks/hooks.json declares no `hooks` object, so nothing is registered")
+for event, matchers in (hooks_manifest.get("hooks") or {}).items():
+    if event not in HOOK_EVENTS:
+        err(f"hooks/hooks.json: {event!r} is not a Claude Code hook event; "
+            f"an unknown event never fires and reports nothing")
+    for matcher in matchers if isinstance(matchers, list) else []:
+        for hook in matcher.get("hooks", []):
+            cmd = hook.get("command", "")
+            if not cmd:
+                err(f"hooks/hooks.json: a {event} entry has no `command`")
+            for rel in re.findall(r"\$\{?CLAUDE_PLUGIN_ROOT\}?/([^\"'\s]+)", cmd):
+                if not (ROOT / rel).exists():
+                    err(f"hooks/hooks.json: {event} runs {rel!r}, which does not "
+                        f"exist. The hook would fail on every fire")
+
 # --- skills ---------------------------------------------------------------
 
 skill_dirs = sorted(p for p in (ROOT / "skills").iterdir() if p.is_dir())
