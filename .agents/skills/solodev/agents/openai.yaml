@@ -1,0 +1,6 @@
+interface:
+  display_name: "Solodev"
+  short_description: "Repo-specific patterns and workflows for solodev"
+  default_prompt: "Use the solodev repo skill to follow existing architecture, testing, and workflow conventions."
+policy:
+  allow_implicit_invocation: true
