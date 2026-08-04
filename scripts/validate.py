@@ -200,8 +200,8 @@ for path in (ROOT / "README.md", ROOT / "skills/loop/SKILL.md", ROOT / "docs/arc
     if not path.exists():
         continue
     text = path.read_text()
-    words = {"one": 1, "two": 2, "three": 3, "four": 4, "five": 5}
-    pat = r"(one|two|three|four|five) of the (one|two|three|four|five)"
+    words = {"one": 1, "two": 2, "three": 3, "four": 4, "five": 5, "six": 6, "seven": 7}
+    pat = r"(one|two|three|four|five|six|seven) of the (one|two|three|four|five|six|seven)"
     for claim, whole in re.findall(pat, text, re.IGNORECASE):
         if words[claim.lower()] != len(no_edit) or words[whole] != len(agents):
             err(

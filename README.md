@@ -10,6 +10,7 @@ audit, and QA skills it calls along the way.
 |---|---|
 | `/solodev:loop [interval] [plan]` | Runs one full development iteration, then schedules the next one itself |
 | `/solodev:discover [area]` | Finds work the repo proves is needed but nobody filed — and files it with citations |
+| `/solodev:graph [build\|question]` | Builds and queries a greppable code map — module cards, god nodes, edges — under `specs/graph/` |
 | `/solodev:task <what>` | Files a feature, bug, enhancement, or chore into the backlog — classified, scored, queued |
 | `/solodev:fe [target]` | Front-end engineering — architecture, state, runtime cost, code-level a11y |
 | `/solodev:be [target]` | Back-end engineering — boundaries, API and data design, transactions |
@@ -39,8 +40,9 @@ The audits ship as subagents too, so `loop` can run them in isolated contexts:
 | `solodev:pr-reviewer` | **no** | Reviews the diff, reports by severity, never approves |
 | `solodev:ux-auditor` | **no** | Judges whether the task can be completed |
 | `solodev:ui-auditor` | **no** | Judges how it presents |
+| `solodev:code-mapper` | yes — `specs/graph/` only | Maps one module into a graph card, in parallel with its siblings |
 
-Four of the five have no edit tools at all. An auditor that can patch what it finds
+Four of the six have no edit tools at all. An auditor that can patch what it finds
 tends to patch instead of report, and the finding never reaches the Run Log.
 
 ## The loop
@@ -84,6 +86,7 @@ The loop's state lives in the repo, not in the conversation:
 | `specs/LOOP_STATE.md` | Scored backlog, current task, Run Log, next-iteration plan |
 | `specs/LOOP_LEARNINGS.md` | Binding rules learned from real failures, capped at 150 lines |
 | `specs/REFERENCE.md` | Cached external API patterns |
+| `specs/graph/` | The code map — module cards and god nodes; rebuild any time with `/solodev:graph` |
 | `docs/evidence/` | Verification captures |
 
 **`specs/` and `docs/` are never committed.** The loop adds them to `.gitignore` at
@@ -119,6 +122,15 @@ Log, may change at most two sections, and must delete as many lines as they add.
 
 **Audits run as separate agents.** An agent that grades its own work is generous with
 itself, so `qa`, `ux`, `ui`, and `pr-review` each run in their own context.
+
+**The repo maps itself so it stops re-reading itself.** `/solodev:graph` fans out
+one mapper per module and writes a plain-markdown knowledge graph (inspired by
+[graphify](https://github.com/Graphify-Labs/graphify)): an index with god nodes and
+module edges, one card per module, every claim marked EXTRACTED with a `file:line`
+or INFERRED. The loop reads the index in Phase 0 instead of exploring, starts
+call-site inventories from the `Used by` edges, and refreshes touched cards after
+each run. Answers are always re-verified against live code — the map narrows, grep
+confirms.
 
 **Cadence beats enthusiasm.** Every third run is audit or refactor instead of a
 feature; every fifth adds a meta-review. Only an S1 bug — data loss, a security hole,
