@@ -29,6 +29,14 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
+- **Protocol v1.12: orientation checks that past work actually landed.** A change can
+  be committed, reviewed and written up as finished while its branch never reaches the
+  default one, and nothing looked. Orientation now does, in a single command, and
+  distinguishes the two cases that matter: a branch carrying work the default branch
+  lacks is a real gap, while an unmerged branch whose diff is empty is a stale pointer
+  and is ignored. Each gap either lands or gets recorded, so the check cannot decay
+  into noise nobody reads.
+
 - **Protocol v1.11: prune before you add.** §4C used to say pruning is what you do
   when a cap fails. That turned every cap into a mid-edit interruption — check the
   budget first, make room, then write. The §4D bloat guardrail is also explicit now
