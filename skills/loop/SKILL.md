@@ -87,12 +87,19 @@ The first run **ships no feature**. Its job is to stand up the loop machinery:
    baseline and record the test count.
 5. **Create the mandatory documents if absent**: `README.md`, `CHANGELOG.md`
    (Keep a Changelog format, with an `## [Unreleased]` section), and a `docs/`
-   directory with `docs/README.md` as its index.
-6. **Build the initial scored backlog** from reading the repo plus the user's
+   directory with `docs/README.md` as its index. A `README.md` you create describes
+   **the product**, never the loop — see protocol §6, and note that `docs/` is
+   local-only per §2.
+6. **Add `specs/` and `docs/` to `.gitignore`**, creating the file if absent. They are
+   the loop's workspace and never enter the repo's history (§2). Verify with
+   `git check-ignore --no-index specs docs` before continuing — the bootstrap has
+   already written into both by this point, so an unignored workspace means the next
+   commit carries it.
+7. **Build the initial scored backlog** from reading the repo plus the user's
    request, and write it to `specs/LOOP_STATE.md`.
-7. Write memory as described below.
-8. Commit, then open the run's draft PR via `pr-new`.
-9. Write the §9 report, including the plan for the next iteration.
+8. Write memory as described below.
+9. Commit, then open the run's draft PR via `pr-new`.
+10. Write the §9 report, including the plan for the next iteration.
 
 Run #2 is the first one to touch a feature.
 

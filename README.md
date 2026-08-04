@@ -86,6 +86,15 @@ The loop's state lives in the repo, not in the conversation:
 | `specs/REFERENCE.md` | Cached external API patterns |
 | `docs/evidence/` | Verification captures |
 
+**`specs/` and `docs/` are never committed.** The loop adds them to `.gitignore` at
+bootstrap and the quality gate fails if either is tracked. They are the workflow's
+bookkeeping, not your product's, and `docs/evidence/` holds raw command transcripts
+that can capture anything a run happened to print. Nothing about the loop is written
+into your `README.md` or `CHANGELOG.md` either.
+
+The trade is stated rather than hidden: **the loop's memory does not survive a fresh
+clone.** It lives with the working copy.
+
 A fresh session only needs `/solodev:loop` again. Scheduling itself is session-only,
 so it stops when the session ends — the work does not.
 

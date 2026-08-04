@@ -171,39 +171,27 @@ documented_agents = set(re.findall(r"`solodev:([a-z0-9-]+)`", readme)) & set(age
 for name in sorted(agents - documented_agents):
     err(f"README.md: agent {name!r} ships but is not documented")
 
-# the loop's deliverable must be committable. Run #1 shipped a .gitignore listing
-# specs/ and docs/; git commit would have exited 0 with the whole run's output absent.
-# Files AND directories. A directory-only check misses `*.txt`, which is enough to
-# swallow every evidence transcript while the two roots still look clean.
-roots = [r for r in ("specs", "docs") if (ROOT / r).exists()]
-if roots:
-    listed = subprocess.run(
-        ["git", "ls-files", "--cached", "--others", "--", *roots],
-        cwd=ROOT, capture_output=True, text=True,
-    )
-    deliverable = sorted({
-        *roots,
-        *(str(p.relative_to(ROOT)) for r in roots for p in (ROOT / r).rglob("*") if p.is_dir()),
-        *(l for l in listed.stdout.split("\n") if l.strip()),
-    })
-    # --no-index is load-bearing: without it git skips any path already in the
-    # index, so once specs/ is tracked the check silently passes forever. We are
-    # testing the ignore rule, not the current index state — a newly ignored path
-    # keeps its tracked files but swallows every new one in silence.
-    # --stdin keeps argv bounded; docs/evidence/ gains a directory every run.
-    found = subprocess.run(
-        ["git", "check-ignore", "--no-index", "--stdin"],
-        cwd=ROOT, capture_output=True, text=True, input="\n".join(deliverable),
-    )
-    # 0 = something matched, 1 = nothing matched. Anything else (128 outside a git
-    # repo) means the check did not run, which must not read as a pass.
-    if found.returncode not in (0, 1):
-        err(f"git check-ignore could not run ({found.stderr.strip() or 'unknown'}); "
-            f"the deliverable-not-ignored check did NOT execute")
-    for path in sorted({p for p in found.stdout.split("\n") if p.strip()}):
+# The loop's workspace must NOT be committed. specs/ and docs/ hold workflow
+# bookkeeping and raw command transcripts; a transcript captures whatever a run
+# happened to print, and a credential in git history is permanent.
+# This check asserted the exact opposite until 2026-08-04. Run #1 read a
+# .gitignore listing these directories as a bug and deleted the lines. It was
+# the rule, not a bug, and removing it made the plugin contaminate every repo
+# it ran in — confirmed by the user from live use in another project.
+tracked = subprocess.run(
+    ["git", "ls-files", "--", "specs", "docs"],
+    cwd=ROOT, capture_output=True, text=True,
+)
+if tracked.returncode != 0:
+    err(f"git ls-files could not run ({tracked.stderr.strip() or 'unknown'}); the "
+        f"workspace-not-committed check did NOT execute")
+else:
+    leaked = sorted(f for f in tracked.stdout.split("\n") if f.strip())
+    if leaked:
         err(
-            f".gitignore excludes {path}, which protocol §2 and §6 require every "
-            f"run to commit. A commit would succeed with it missing, and say nothing"
+            f"{len(leaked)} file(s) under specs/ or docs/ are tracked by git; these "
+            f"never ship. First: {leaked[0]}. Untrack with "
+            f"`git rm -r --cached specs docs`, and confirm .gitignore lists both"
         )
 
 # a claim about how many agents cannot edit must match the frontmatter

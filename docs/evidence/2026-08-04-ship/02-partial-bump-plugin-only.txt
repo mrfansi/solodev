@@ -1,4 +1,0 @@
-skills: 12  agents: 5 (4 without edit tools)
-ERROR version drift: plugin.json '0.2.0' vs marketplace.json '0.1.0'. plugin.json wins at runtime, so this misleads readers rather than breaking installs — but a release that moved one file and not the other is a half-cut release
-ERROR version 0.2.0 has no `## [0.2.0]` section in CHANGELOG.md. Bumping without cutting the changelog leaves users no way to see what they received
-FAIL

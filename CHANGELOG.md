@@ -7,6 +7,25 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Fixed
+
+- **The loop no longer contaminates the repository it runs in.** `specs/` and `docs/`
+  are added to `.gitignore` at bootstrap and are never committed; the quality gate
+  fails if either is tracked. `docs/evidence/` stores raw transcripts of whatever
+  commands a run executed, which is an open-ended capture surface — an environment
+  dump, an API response, a request with an auth header — and anything committed to git
+  history is permanent.
+- **Nothing about the loop is written into `README.md`, `CHANGELOG.md`, or a PR body.**
+  Those describe the product to its users; the loop is how the product was built. The
+  exception is a repo whose product *is* the workflow tooling, which is why this file
+  documents the skills themselves.
+
+  Reported from live use in another repository. Protocol v1.4.
+
+  **Trade-off, stated rather than hidden:** the loop's memory no longer survives a
+  fresh clone. A new checkout has no `specs/LOOP.md`, so it bootstraps from scratch.
+  Back the directory up outside git if the backlog and Run Log matter to you.
+
 ### Changed
 
 - **Branch naming follows `<type>/<backlog-id>-<what-it-does>`** instead of
