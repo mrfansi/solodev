@@ -67,29 +67,29 @@ would remove ~2,410 once. `LOOP_STATE.md` is now the second-largest read and ove
 the protocol itself on trend. `R-3` is rescored to **20.0** on this and is the top
 actionable item.
 
-**Where the work physically is — READ THIS BEFORE BRANCHING.** The four stacked PRs
-were all merged, but in an order that did not put the work on `main`. PR #1 merged
-`run-1` into `main` first; PRs #3, #4 and #5 then merged each newer branch into the one
-below it, so they landed on intermediate *branches*, never on `main`.
+**Where the work physically is.** `main` is current: runs #1–#4, protocol v1.3,
+twelve skills, release 0.2.0. **Branch from `main`.**
 
-Result: **`main` carries run #1 only** — protocol v1.1, ten skills, no `discover`, no
-`ship`. Everything through run #4 lives on `loop/run-3-skill-dedup` and
-`loop/run-4-ship`. Verify before trusting either:
+It was not always. The four stacked run PRs were all merged, but PR #1 landed `run-1`
+on `main` first, so PRs #3/#4/#5 each merged a newer branch into the *older* one below
+it — onto intermediate branches that were no longer on `main`'s path. `main` sat at
+run #1 (ten skills, protocol v1.1) while every PR read as merged. PR #7 closed it.
+
+The lesson for the next stack: **merge a stacked chain top-down, or retarget each PR
+at `main` as the one below it lands.** Bottom-up looks right and silently strands
+everything above the first merge. Cheap check before trusting `main`:
 
 ```bash
-git ls-tree origin/main --name-only skills/ | wc -l   # 10 = stale, 12 = current
+git ls-tree origin/main --name-only skills/ | wc -l   # must match `ls skills | wc -l`
 ```
 
-A PR from `loop/run-4-ship` into `main` closes the gap. Until it merges, branch from
-`loop/run-4-ship`, not from `main`.
+Whatever base you pick, it must already contain `specs/LOOP.md`. A base without it
+makes the loop skill select BOOTSTRAP and overwrite this file from the template,
+losing the backlog, the Run Log, and every learning.
 
-**Branch the next run from the newest branch above, not from `main`.** From `main` the
-loop skill sees no `specs/LOOP.md`, selects BOOTSTRAP, and overwrites this file from
-the template — losing the backlog, the Run Log, and every learning.
-
-**Protocol is at v1.2** as of the C-5 ruling. From run #4 on, a cadence run ships a
-feature *alongside* its refactor rather than instead of one — the streak run #3 broke
-does not repeat.
+**Protocol is at v1.3.** v1.2 settled `C-5`: from run #4 on, a cadence run ships a
+feature *alongside* its refactor rather than instead of one. v1.3 named branches
+`<type>/<backlog-id>-<what-it-does>` (`C-8`).
 
 Confirm the base carries the latest run before Phase 1:
 
