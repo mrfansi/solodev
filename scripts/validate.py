@@ -239,6 +239,39 @@ for rel in ("skills/autopilot/references/PROTOCOL.md", "skills/task/SKILL.md", "
         if phrase not in text:
             err(f"{rel}: {sev} definition drifted from the canonical phrase {phrase!r}")
 
+# Phase 0 read budget. These two files are read before any work happens on every
+# single run, and both grew without a cap until 2026-08-04: LOOP_STATE.md more than
+# doubled across three runs and became the second-largest read in the set, while
+# LOOP_LEARNINGS.md quietly passed the 150-line cap its own header has always
+# claimed — a cap that was prose, and prose cannot fail.
+#
+# Budgets come from the measurement in docs/evidence/2026-08-04-r3-roll-off/, not
+# from taste. Roll-off took LOOP_STATE.md from 23774 B to 11463 B; 14000 B leaves
+# roughly one run of normal growth (a Run Log line, a few backlog rows, a rewritten
+# task section) before the gate tells the next run to roll off again.
+#
+# specs/ is gitignored, so these files exist only where the loop has actually run.
+# Absent is not a failure — the validator also runs on main and in repos that never
+# bootstrapped the loop.
+BUDGETS = {
+    "specs/LOOP_STATE.md": ("bytes", 14000,
+        "Roll off to specs/LOOP_ARCHIVE.md: move closed backlog rows and Run Log "
+        "entries older than the three most recent. MOVE them — deleting loses the "
+        "decision trail"),
+    "specs/LOOP_LEARNINGS.md": ("lines", 150,
+        "Delete rules the compiler, tests or lint now enforce and leave a one-line "
+        "pointer to the check, per §4C. A rule guarded by code does not need a brain"),
+}
+for rel, (unit, cap, fix) in BUDGETS.items():
+    path = ROOT / rel
+    if not path.exists():
+        continue
+    text = path.read_text()
+    size = len(text.encode()) if unit == "bytes" else len(text.splitlines())
+    if size > cap:
+        err(f"{rel} is {size} {unit}, over its {cap}-{unit[:-1]} Phase 0 budget by "
+            f"{size - cap}. {fix}")
+
 # Branch naming, per protocol §3 Phase 8: <type>/<backlog-id>-<what-it-does>.
 # A WARNING, not an error: the validator runs on main, on release branches, and in
 # repos that never adopted the loop, none of which should fail the gate for this.

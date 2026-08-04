@@ -7,13 +7,25 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
-### Changed
+### Fixed
 
-- **The loop skill is now `/solodev:autopilot`.** `skills/loop/` renamed to
-  `skills/autopilot/`; every invocation and path reference updated. Behaviour is
-  unchanged — same protocol, same state files in `specs/`.
+- **Every skill prints a score the same way.** `task` and the two loop templates wrote
+  `(Value 5 × Frequency 3 ÷ Size 1)` while `discover` wrote `(V5 x F3 / S1)` for the
+  same number, so two teammates reporting the same backlog row disagreed on how it
+  looked. All four output templates now use the ASCII form, which is the safer one in
+  a terminal. The formula *definitions* keep `×` and `÷` — those are read, not printed.
+
+## [0.3.0] - 2026-08-04
 
 ### Added
+
+- **CI runs the validator.** `.github/workflows/validate.yml` executes
+  `python3 scripts/validate.py` on every push and pull request. It was the repo's
+  only executable gate and it fired only when someone remembered to type it. No
+  dependencies to install — the runner already has Python 3. Verified against a
+  clean detached-HEAD clone, which is what `actions/checkout` produces and the one
+  place a locally-green run could still fail: no `specs/`, no `docs/`, no branch
+  name, all three special-cased by the validator.
 
 - **`/solodev:graph` — the teammate who has read the whole codebase.** Builds a
   greppable knowledge graph under `specs/graph/` (inspired by
@@ -31,7 +43,76 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   inventory from the `Used by` edges, grep-verified; §4B refreshes the cards of
   modules the run touched. No phase fails when the map is absent.
 
+### Changed
+
+- **The protocol's patch history moved out of the protocol — v1.10.** §12 is now a
+  five-line pointer; the entries live in `skills/autopilot/references/PROTOCOL-HISTORY.md`,
+  and a patch made in your own repo appends to `specs/LOOP_ARCHIVE.md` instead. The
+  history had reached a tenth of the whole protocol while governing no phase — every
+  run read it, and only a §4D run (one in five) had any use for it.
+
+  This is `R-1` in part. **The rest of `R-1` was measured and rejected**: the plan was
+  to move §5–§12 out of the start-of-run read entirely, on a claim that it would cut
+  40%. Remeasuring showed the claim counted the *size* of those sections and never
+  their *frequency* — six of the eight are needed by every single run, four because an
+  invariant says so. Moving them relocates tokens between phases instead of removing
+  them. Only §12 was genuinely cold, and only §12 moved.
+
+- **The loop's state file rolls off instead of growing forever — protocol v1.8.**
+  Closed backlog rows and Run Log entries older than the three most recent now
+  **move** to `specs/LOOP_ARCHIVE.md`, which the start of a run never reads. Moving,
+  not deleting: the decision trail behind a closed item is why the backlog keeps
+  closed rows at all. The Run Log itself is one line per run and carries no prose.
+  This replaces §4C's old "keep the last 20 lines" prune, which deleted what it
+  trimmed and contradicted the backlog's own rule.
+
+- **The two read-every-run caps are enforced by `scripts/validate.py`, not by prose.**
+  `specs/LOOP_STATE.md` fails the gate over 14000 bytes; `specs/LOOP_LEARNINGS.md`
+  over 150 lines. The 150-line cap had been claimed in a file header since the first
+  run and the file had been over it for four runs, unnoticed — a cap that cannot fail
+  is not a cap. Both budgets come from measurement, and both are skipped silently in
+  a repo where the loop has never run.
+
+- **The loop skill is now `/solodev:autopilot`.** `skills/loop/` renamed to
+  `skills/autopilot/`; every invocation and path reference updated. Behaviour is
+  unchanged — same protocol, same state files in `specs/`.
+
+- **Protocol v1.6 — the ambiguity and token pass.** Invariant 5 no longer forces a
+  README edit on every run: CHANGELOG and `docs/` move every run, README moves when
+  the run changed how the product is used (§6's test already said so; the invariant
+  contradicted it). The subagent prompt rules — what every prompt carries, the
+  wait-for-helpers rule, what runs inline, the fallback when an agent type is missing
+  — moved from `skills/loop/SKILL.md` into protocol §3, so one file owns them and the
+  skill no longer argues with the protocol. Phase 6 now actually enforces §2's claim
+  that a tracked `specs/` or `docs/` fails the gate. §4C prunes `LOOP_STATE.md` (Run
+  Log caps at 20 lines, finished tasks collapse to their log line) so the file the
+  loop reads every run stops growing without bound. §8 owns the guarantee that a
+  cadence-deferred feature becomes the next run's default task.
+- **Agent files no longer restate their skill's rules.** Each agent loads its skill
+  and now states the precedence explicitly: the skill owns the method and severity
+  scale, the agent owns the return shape. One copy of each rule, and roughly a third
+  less text loaded on every agent invocation.
+- **Every skill and agent description was cut to its triggers.** Descriptions load
+  into every session whether or not the skill runs; the justification prose they
+  carried belongs in the skill body, which loads only on use.
+
+- **Branch naming follows `<type>/<backlog-id>-<what-it-does>`** instead of
+  `loop/run-<N>-<slug>`. The type matches the Conventional Commit the run will write,
+  so branch and commit cannot disagree; the backlog id makes the branch traceable
+  without opening anything; the description says what the branch does rather than
+  which run made it. Protocol v1.3. `scripts/validate.py` warns on a branch that does
+  not conform — a warning, not an error, so it never fails the gate on `main` or in a
+  repo that has not adopted the loop.
+
 ### Fixed
+
+- **The two contradictory S1 rules now scope themselves — protocol v1.9.** Phase 4
+  said an S1 finding "is fixed in this run"; §10 said an S1 found mid-run means
+  "stop, report it, and let the user decide". Both are true, of different things, and
+  neither said which: an S1 **in** the slice under test is the run's own defect and
+  Phase 4 fixes it, while an S1 **outside** the slice stops the run and goes to the
+  user. Run #1 acted on the Phase 4 reading twice without noticing the other rule
+  existed; the ambiguity stood for five runs.
 
 - **An agent's findings could vanish if it spawned helpers of its own.** A helper
   reports to the agent that spawned it, not to that agent's caller — so an agent
@@ -63,37 +144,6 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   **Trade-off, stated rather than hidden:** the loop's memory no longer survives a
   fresh clone. A new checkout has no `specs/LOOP.md`, so it bootstraps from scratch.
   Back the directory up outside git if the backlog and Run Log matter to you.
-
-### Changed
-
-- **Protocol v1.6 — the ambiguity and token pass.** Invariant 5 no longer forces a
-  README edit on every run: CHANGELOG and `docs/` move every run, README moves when
-  the run changed how the product is used (§6's test already said so; the invariant
-  contradicted it). The subagent prompt rules — what every prompt carries, the
-  wait-for-helpers rule, what runs inline, the fallback when an agent type is missing
-  — moved from `skills/loop/SKILL.md` into protocol §3, so one file owns them and the
-  skill no longer argues with the protocol. Phase 6 now actually enforces §2's claim
-  that a tracked `specs/` or `docs/` fails the gate. §4C prunes `LOOP_STATE.md` (Run
-  Log caps at 20 lines, finished tasks collapse to their log line) so the file the
-  loop reads every run stops growing without bound. §8 owns the guarantee that a
-  cadence-deferred feature becomes the next run's default task.
-- **Agent files no longer restate their skill's rules.** Each agent loads its skill
-  and now states the precedence explicitly: the skill owns the method and severity
-  scale, the agent owns the return shape. One copy of each rule, and roughly a third
-  less text loaded on every agent invocation.
-- **Every skill and agent description was cut to its triggers.** Descriptions load
-  into every session whether or not the skill runs; the justification prose they
-  carried belongs in the skill body, which loads only on use.
-
-- **Branch naming follows `<type>/<backlog-id>-<what-it-does>`** instead of
-  `loop/run-<N>-<slug>`. The type matches the Conventional Commit the run will write,
-  so branch and commit cannot disagree; the backlog id makes the branch traceable
-  without opening anything; the description says what the branch does rather than
-  which run made it. Protocol v1.3. `scripts/validate.py` warns on a branch that does
-  not conform — a warning, not an error, so it never fails the gate on `main` or in a
-  repo that has not adopted the loop.
-
-### Fixed
 
 - **`/solodev:discover` seam 2 only worked inside this plugin's own repository.** Its
   commands grepped `skills/*/` and `agents/*.md`, which exist nowhere else, while the
@@ -200,5 +250,6 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Protocol §3 Phase 1 states what happens when the audit cadence and the meta-review
   cadence land on the same run: they stack, neither cancels the other.
 
-[Unreleased]: https://github.com/mrfansi/solodev/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/mrfansi/solodev/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/mrfansi/solodev/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/mrfansi/solodev/releases/tag/v0.2.0

@@ -86,7 +86,7 @@ export function" has already decided the fix, possibly wrongly, before anyone lo
 ```
 FILED    : B-7 — <title>
 TYPE     : bug, severity S2
-SCORE    : 15.0  (Value 5 × Frequency 3 ÷ Size 1)
+SCORE    : 15.0  (V5 x F3 / S1)
 QUEUE    : #1 of 6 — ahead of F-3 (8.0) and E-2 (6.7)
 NEXT RUN : run #<N+1> is <a feature run / an audit run per cadence>, so this
            <will be picked up / waits for run #N+2>

@@ -1,0 +1,14 @@
+name: validate
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # The validator is this repo's only executable gate. Python 3 ships on the
+      # runner and the script has no dependencies, so there is nothing to install.
+      - run: python3 scripts/validate.py

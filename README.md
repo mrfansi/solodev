@@ -83,7 +83,8 @@ The loop's state lives in the repo, not in the conversation:
 | File | Holds |
 |---|---|
 | `specs/LOOP.md` | The protocol — the loop patches its own copy over time |
-| `specs/LOOP_STATE.md` | Scored backlog, current task, Run Log, next-iteration plan |
+| `specs/LOOP_STATE.md` | Scored backlog, current task, Run Log, next-iteration plan — capped, and the cap is enforced |
+| `specs/LOOP_ARCHIVE.md` | Where closed rows and older Run Log entries go. Never read at the start of a run |
 | `specs/LOOP_LEARNINGS.md` | Binding rules learned from real failures, capped at 150 lines |
 | `specs/REFERENCE.md` | Cached external API patterns |
 | `specs/graph/` | The code map — module cards and god nodes; rebuild any time with `/solodev:graph` |
@@ -112,6 +113,8 @@ Developing on it locally? Point the marketplace at the clone instead —
 `/plugin marketplace add /path/to/claude-solodev` — and run
 `python3 scripts/validate.py` before committing; it checks the manifests, every
 frontmatter block, and every cross-reference between skills, agents, and this README.
+GitHub Actions runs the same command on every push and pull request, so forgetting it
+locally costs you a red check rather than a silent regression.
 
 ## Design notes
 

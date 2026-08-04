@@ -1,4 +1,4 @@
-# LOOP PROTOCOL · v1.7
+# LOOP PROTOCOL · v1.10
 
 > This file is **the protocol source of truth for this repository**. The loop may
 > patch it (§4D). Do not overwrite it from the skill template unless asked.
@@ -47,7 +47,8 @@ User satisfaction outranks feature completeness.
 | File | Contents | Written by the loop? |
 |---|---|---|
 | `specs/LOOP.md` | this protocol | only via a §4D patch |
-| `specs/LOOP_STATE.md` | scored backlog, current task + DoD, Run Log, stack, next plan | yes, every run |
+| `specs/LOOP_STATE.md` | scored backlog, current task + DoD, Run Log, stack, next plan (≤14000 bytes) | yes, every run |
+| `specs/LOOP_ARCHIVE.md` | closed backlog rows, Run Log entries older than the last three | roll-off only (§4C) |
 | `specs/LOOP_LEARNINGS.md` | binding rules (150 lines max) | yes, every run |
 | `specs/REFERENCE.md` | cached external API/patterns | yes, incrementally |
 | `specs/graph/**` | the code map: module cards, god nodes (`graph` skill) | yes, modules touched |
@@ -94,6 +95,8 @@ own work — only judgement is isolated.
    (including the **next-iteration plan** left by the previous run) →
    `CHANGELOG.md` `[Unreleased]` → `README.md` → `specs/graph/GRAPH.md` if
    present (the code map — do not re-explore what it already answers).
+   **Do not read `specs/LOOP_ARCHIVE.md` here.** Open it only when you need the
+   trail behind a specific closed item; reading it every run undoes the roll-off.
 4. Read Claude Code memory for context that is not in the repo.
 
 **Output of this phase — exactly 4 lines:**
@@ -191,8 +194,12 @@ same message as `qa-runner`, so the two run concurrently. A pure internal refact
 with no boundary change skips it, and the report says so. Any Critical or High finding
 is an **S1**: it overrides the cadence and is fixed in this run, before the commit.
 
-S1 and S2 findings are fixed in this run before the phase completes; S3 goes to the
-backlog with its origin.
+**In-slice** S1 and S2 findings are fixed in this run before the phase completes; an
+in-slice S3 goes to the backlog with its origin. A finding **outside** the slice
+follows §10 instead — and an out-of-slice S1 stops the run rather than being fixed.
+The distinction is what makes both rules true at once: fixing a defect you just
+introduced is finishing your own work, while fixing one you merely stumbled over is
+scope creep the user did not ask for.
 
 Play a **real user**, not a developer. Run the scenario from a normal entry point
 through to completion. Green tests do not substitute for this phase.
@@ -329,10 +336,16 @@ the next run worse than no map would.
 - **Delete any rule now enforced by code, types, tests, or lint** — if the compiler
   guards it, the brain does not need to. Replace it with a pointer to the test.
 - `LOOP_LEARNINGS.md` caps at **150 lines**. Over the cap → cut the least-used rules.
-- `LOOP_STATE.md` is pruned the same way: the Run Log keeps its last **20** lines,
-  and a finished task's call-site inventory and DoD checklist are deleted once the
-  run is logged — the Run Log line is the record. Struck backlog rows stay (they are
-  the decision trail) but keep only id, title, and Notes.
+- `LOOP_STATE.md` **rolls off** to `specs/LOOP_ARCHIVE.md`, which Phase 0 never reads.
+  Move — never delete — a closed backlog row the moment it is struck, and every Run
+  Log entry older than the **three** most recent, its prose notes with it. The Run
+  Log itself is one line per run and holds no prose. A finished task's call-site
+  inventory and DoD checklist *are* deleted once the run is logged; the Run Log line
+  is their record.
+- **Both caps are enforced by `scripts/validate.py`, not by good intentions** — a cap
+  that lives only in prose cannot fail, and this one silently did for four runs.
+  The budgets: `LOOP_STATE.md` ≤ 14000 bytes, `LOOP_LEARNINGS.md` ≤ 150 lines.
+  Pruning is what you do when the gate fails, not a thing you remember to do.
 
 ### D. Meta-review (every 5 runs)
 Compute trends from the Run Log: is the rubric score rising? are iterations falling?
@@ -352,7 +365,8 @@ Metric  : expect <metric> to improve from X to Y
 2. One patch changes at most 2 sections.
 3. The protocol may not bloat: adding >5 lines requires deleting as many.
 4. A patch is only valid if it points at a **real failure recorded in the Run Log**.
-5. Bump the protocol version and record it in §12.
+5. Bump the protocol version in the title, and append the entry where §12 says —
+   never into this file.
 
 ### E. Failure protocol
 - The same task failing **2 runs in a row** → split it smaller and write a rule about
@@ -458,7 +472,7 @@ Written into `specs/LOOP_STATE.md` under the heading
 
 ```
 Task        : <id + title>
-Score       : <n>  (Value <n> × Frequency <n> ÷ Size <n>)
+Score       : <n>  (V<n> x F<n> / S<n>)
 Why this    : <tie it to a gap, the Run Log, or a user request>
 Cadence     : run #<N+1> → <feature allowed / audit required / meta-review required>
 Prereqs     : <what must exist first, or "none">
@@ -540,8 +554,10 @@ now** — it is written to the backlog with its origin, and the report names it.
 is the main defence against scope creep: a run that fixes everything it stumbles
 over finishes nothing and produces an unreviewable diff.
 
-The exception is an S1 bug discovered mid-run: stop, report it, and let the user
-decide whether to finish the current slice first.
+The exception is an **out-of-slice S1**: stop, report it, and let the user decide
+whether to finish the current slice first. An S1 *inside* the slice under test is
+this run's own defect — Phase 4 fixes it before the phase completes and does not
+stop to ask.
 
 ---
 
@@ -597,23 +613,14 @@ decide whether to finish the current slice first.
 
 ## §12 PROTOCOL HISTORY
 
-- **v1.0** — initial protocol, bootstrapped from the `dev-loop` skill.
-- **v1.1** — §1 absorbed the three skill-only invariants; §3 Phase 1: stacked cadences.
-- **v1.2** — §3 Phase 1: a standing feature directive outranks the cadence's
-  *prohibition*, not its choice of slice (user ruling, `C-5`).
-- **v1.3** — §3 Phase 8: branches are `<type>/<backlog-id>-<what-it-does>` (user
-  directive).
-- **v1.4** — §2: `specs/` and `docs/` never committed; §6: nothing about the loop in
-  `README.md`/`CHANGELOG.md` unless the workflow tooling *is* the product. From live
-  use: the plugin was contaminating the repos it ran in.
-- **v1.5** — §3 Phase 8: PRs open **ready**, not draft. Opening is reversible,
-  merging is not, and merging was already the user's.
-- **v1.6** — ambiguity + token pass, by the user: invariant 5 scopes README to §6's
-  usage test; the subagent prompt rules moved from the skill into §3 and now cover
-  Phases 4/5/8 alike; Phase 6 enforces the §2 untracked-workspace rule; §4C prunes
-  `LOOP_STATE.md`; §8 owns the deferred-feature guarantee; §10 S3 wording aligned
-  with the `task` and `qa` skills.
-- **v1.7** — the code map (`graph` skill), by the user: §2 lists `specs/graph/**`;
-  Phase 0 reads `GRAPH.md` when present; Phase 3 starts the call-site inventory
-  from its `Used by` edges, grep-verified; §4B refreshes touched modules' cards.
-  The map is optional — no phase fails for its absence.
+Not kept here. The history is a decision trail, not a rule — no phase obeys it, and it
+had grown to a tenth of the Phase 0 read while governing nothing. Same split as
+`specs/LOOP_ARCHIVE.md`, same reason.
+
+- **The shipped protocol's own history** — every patch up to this version — is in
+  `PROTOCOL-HISTORY.md`, beside this file in the `autopilot` skill's `references/`.
+- **A patch you make in your repo** goes to `specs/LOOP_ARCHIVE.md`, under a
+  `## Protocol history` heading. Create it if it is not there.
+
+Read either only when you need to know why a rule reads the way it does. Never at
+Phase 0.

@@ -2,7 +2,9 @@
 
 > Written by the loop every run. Source of truth for the backlog, the current task,
 > metrics, and the next-iteration plan. Protocol: `specs/LOOP.md`.
-> Pruned per §4C — Run Log caps at 20 lines; this file must not grow without bound.
+> Rolls off per §4C to `specs/LOOP_ARCHIVE.md`, which Phase 0 never reads: closed
+> backlog rows and Run Log entries older than the last three MOVE there, never get
+> deleted. `scripts/validate.py` fails the gate if this file passes 14000 bytes.
 
 ## Detected stack
 
@@ -36,7 +38,9 @@ Score = (Value 1–5 × Frequency 1–5) ÷ Size 1–5. Ids are type-prefixed pe
 `F-` feature · `B-` bug · `E-` enhancement · `R-` refactor · `C-` chore.
 Bugs carry a severity (S1/S2/S3); S1 overrides the cadence.
 
-Strike through finished tasks; do not delete them — deleting loses the decision trail.
+Strike a finished task, then MOVE the row to `specs/LOOP_ARCHIVE.md` — deleting it
+loses the decision trail, and leaving it here is what made this file the second-
+largest thing the loop reads.
 The Notes column always carries the **origin**: user report with its date, or
 "found during run #N".
 
@@ -50,7 +54,7 @@ The Notes column always carries the **origin**: user report with its date, or
 
 **Run #N — <task title>**
 
-Score: `<n>` (Value `<n>` × Frequency `<n>` ÷ Size `<n>`).
+Score: `<n>` (V`<n>` x F`<n>` / S`<n>`).
 Cadence: run #N `<multiple of three? of five?>` → `<feature allowed / audit required>`.
 
 Binding `LOOP_LEARNINGS.md` rules for this task: `<list them>`.
@@ -72,7 +76,7 @@ Binding `LOOP_LEARNINGS.md` rules for this task: `<list them>`.
 
 ```
 Task        : <id + title>
-Score       : <n>  (Value <n> × Frequency <n> ÷ Size <n>)
+Score       : <n>  (V<n> x F<n> / S<n>)
 Why this    : <tie it to a gap, the Run Log, or a user request>
 Cadence     : run #<N+1> → <feature allowed / audit required / meta-review required>
 Prereqs     : <what must exist first, or "none">
@@ -84,7 +88,8 @@ Risk        : <what could blow up the scope>
 
 ## Run Log
 
-One line per run. Format:
+The three most recent runs, newest first. One line per run and **no prose** — notes
+and older entries live in `specs/LOOP_ARCHIVE.md`. Format:
 `Run #N | task | rubric-iterations | score initial→final | rework? (cause) | gate failures`
 
 ```
