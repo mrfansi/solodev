@@ -71,10 +71,30 @@ deliberately *not* in the protocol: the protocol governs what happens inside a r
 and scheduling is what happens between them. A repo can adopt the protocol without
 adopting this plugin's scheduling.
 
+## Two ways work enters the backlog
+
+`task` and `discover` look adjacent and are not. The difference is who decided the
+work exists:
+
+| Skill | Input | The decision it makes |
+|---|---|---|
+| `task` | a request a human already formed | how to classify, score, and queue it |
+| `discover` | the repository itself | **that a piece of work exists at all** |
+
+`task` cannot find anything — it files what you bring it. `discover` reads the seams
+where unfiled work accumulates (abandoned markers, documentation describing absent
+behaviour, findings named in evidence but never queued, blind spots in the quality
+gate, friction repeating in the Run Log, work git shows was abandoned) and turns the
+evidence into rows.
+
+They share one rulebook: `task` owns the type table, the id sequence, bug severity,
+the scoring formula, and the row format. `discover` points at those rules rather than
+carrying a second copy, for the same reason the invariants live only in protocol §1.
+
 ## What is deliberately missing
 
-Nothing in the plugin decides **what to build**. The loop can take a slice from
-backlog to draft PR with verification, audit, and review along the way — but the
-backlog is only ever fed by the user or by findings from a run's own verification.
-The product-thinking member of the "team" is not implemented. This is tracked as
-backlog item `F-1` rather than left as an unstated gap.
+Nothing **ships**. The loop takes a slice from backlog to draft PR — verified,
+audited, reviewed — and stops there. Promoting the PR, merging, tagging, and releasing
+are all the user's, and no skill covers them. That is a deliberate boundary rather
+than an oversight: releasing is the step where a mistake reaches other people, and the
+plugin is built to hand that decision over rather than take it.

@@ -1,0 +1,61 @@
+PHASE 5 RUBRIC — /solodev:discover, run #2
+
+Both auditors ran concurrently: solodev:ux-auditor and solodev:ui-auditor.
+Neither can edit files, so every finding arrived as a report.
+
+Scored 0/1/2 per §5. Passes at >=14 with no item at 0. Items 1-4 translated
+for a non-visual surface, per §5's note on libraries and APIs.
+
+  #  item                                        initial  final
+  1  discoverable without secret knowledge             2      2
+  2  nothing broken in the tightest conditions         0      2
+  3  state obvious -> named consistently               2      2
+  4  controls consistent and visible                   1      2
+  5  post-action feedback clear                        1      2
+  6  fewest steps, no forced defaults                  2      2
+  7  human formatting; errors say how to fix           1      2
+  8  consistency with the existing product             1      1
+                                               -------  -----
+     TOTAL of 16                                      10     15
+
+INITIAL 10/16 FAILED on two counts: below the >=14 threshold, and item 2
+scored 0. FINAL 15/16 with no zeros -> PASSES. One rubric iteration, no
+descoping.
+
+WHAT MOVED EACH ITEM
+
+  #2  ui BLOCKER. 27 of 58 lines in 04-discover-report.txt exceeded 80
+      columns, breaking mid-word and mid-filename. Rewrapped flat at
+      column 12; verified 0 violations.
+
+  #4  ux sev3. Seam 2 shipped with no literal command, and the ad hoc
+      script written for it used `ls`, which is aliased to eza/exa/lsd on
+      many dev machines — its colour codes silently corrupted the compare.
+      It broke twice independently: once in this run, once when qa-runner
+      re-ran the seam. Seam 2 now carries a find-based command. [area] now
+      states which seams it narrows and which it cannot.
+
+  #5  ux sev3. Nothing in the report template forced raw-hit disclosure, so
+      a quietly trimmed seam could still print "clean" — which is what
+      happened to seam 1 and what qa-runner filed as S2. SEAMS now requires
+      the raw count beside every verdict. NEXT RUN added so a filed item
+      says when it will actually be worked.
+
+  #7  ux sev2. No guard outside a git repo. Seam 6 now reports UNAVAILABLE
+      there, matching the distinction seam 5 already drew.
+
+  #8  ui BLOCKER 2 fixed: the undocumented second alignment column is gone,
+      template and instance now agree. ui major 1 fixed: the seventh field
+      that broke the label grid is folded into GAPS.
+      NOT fixed, and why it stays at 1: discover's report writes the score
+      as ASCII "x" and "/", while task/SKILL.md:88 uses the multiplication
+      and division glyphs. ASCII is the safer choice in a terminal, so task
+      is the side that should move — and task is outside this slice. Filed
+      as C-7 per §11G instead of edited here.
+
+Weakest remaining item: #8, held at 1 deliberately by C-7 rather than by an
+unfixed defect.
+
+BACKLOGGED, NOT FIXED (ux sev2, origin recorded per §1 invariant 11):
+  none outstanding — sev2 findings #3, #4 and #5 were all cheap enough to
+  fix inside the slice. Only the cross-skill glyph mismatch was deferred.

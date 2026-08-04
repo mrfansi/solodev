@@ -1,0 +1,59 @@
+/solodev:discover — first real execution, against its own repo
+Run #2, 2026-08-04. Transcripts: 01, 02 (invalid, superseded by 03), 03, 06.
+
+Rewritten after the run #2 UI audit: the first draft overflowed 80 columns on 27
+of 58 lines and used an undocumented second alignment column. Seam counts were
+also corrected after qa-runner filed the seam-1 discrepancy as S2.
+
+SWEPT    : whole repo — 6 seams worked
+SEAMS    : seam 1: 19 raw hits -> 0 candidates, 19 false positives. Every
+           one is this run's own text: transcripts under docs/evidence/,
+           policy prose in specs/LOOP.md and its byte-identical template
+           copy ("No new placeholders, stubs, or TODOs"), and the skill and
+           CHANGELOG entries naming what the seam seeks. Each exclusion is
+           named and counted in 06-seam-1-corrected.txt, which also warns
+           that this raw total drifts as the run writes about itself.
+           NOTE: as first shipped the command was broken — its alternation
+           was escaped for a markdown table cell, and an escaped pipe inside
+           grep -E is literal, so it returned 2 hits. Found by pr-reviewer;
+           fixed by moving every seam command into a fenced block.
+           seam 2: 15 named, 15 shipped, both comm directions empty -> clean.
+           1 separate candidate on flow-doc coverage; see FILED.
+           seam 3: 1 id cited in docs/evidence/ (R-3), present in the backlog
+           -> clean, 0 leaked.
+           seam 4: 1 candidate -> dropped as a duplicate. See DROPPED.
+           seam 5: UNAVAILABLE. 1 run recorded; a repeat needs 2+.
+           seam 6: 5 commits, 2 unmerged branches (both this loop's live
+           work), 1 raw revert hit -> 0 candidates. The revert hit is a false
+           positive: git log --grep=revert -i matched 5ef3122 because its
+           body reads "the guard is a comment, not a revert".
+FILED    : 1 item
+           C-6 - protocol §6 requires docs/ to hold "one file per major user
+           flow". 11 user-invocable skills ship; docs/flows/ holds exactly 1
+           file, and pr-review is named in no flow doc at all.
+           score 4.0 (V2 x F4 / S2)
+           cite: 03-seam-2-corrected.txt, "flow docs present : 1" against
+           "user-invocable skills: 11"; requirement at specs/LOOP.md §6.
+DROPPED  : seam 4 found that docs/architecture.md carries the "four of the
+           five agents cannot edit" claim while scripts/validate.py:137
+           cross-checks that claim only in README.md and
+           skills/loop/SKILL.md, so the new doc can drift silently. Dropped
+           by the deduplication rule in §4: already open as C-4(b), filed in
+           run #1 by pr-reviewer. Rediscovering it independently is the
+           intended behaviour — the seam works and the dedupe held.
+
+           Not filed, deliberately: validate.py globs **/*.md, which includes
+           docs/evidence/, so a skill renamed later would fail the gate on a
+           historical transcript. That is a prediction, not an observation —
+           the gate is green today. §2 forbids filing a hunch with a score
+           attached, so it is recorded here and nowhere else.
+BACKLOG  : 11 open, was 10. Top of queue: B-2 (20.0), blocked on the user.
+NEXT RUN : run #3 is an audit/refactor run per cadence, so C-6 (4.0) is not
+           picked up next — R-2, R-3, and R-1 are the refactors ahead of it,
+           and C-4 (12.0) outranks it among the chores. C-6 waits.
+GAPS     : seam 5 cannot produce anything until the Run Log holds 2+ entries.
+           It is the only seam that mines history rather than state, and the
+           only one feeding the §3 Phase 1 learning bonus. Run #3 is the
+           first sweep where it can contribute. A thin result here was
+           expected: this repo was audited by qa-runner and pr-reviewer one
+           run ago, and both filed what they found.

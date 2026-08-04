@@ -9,6 +9,17 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- **`/solodev:discover` — the teammate who decides what to build.** Every other skill
+  acts on work someone already decided on; this one finds work the repo proves is
+  needed but nobody filed. It works six seams — abandoned `TODO`/`FIXME` markers,
+  documentation describing behaviour no code implements, findings named in past
+  evidence but never queued, blind spots the quality gate cannot fail on, friction
+  repeating across the Run Log, and work `git` shows was abandoned — then classifies,
+  scores, deduplicates against decisions already made, and files at most five rows.
+  Every row must cite a file, a line, a hash, or a command; an item that cannot be
+  pointed at is an opinion, not a task. It reuses `/solodev:task`'s scoring and row
+  format rather than carrying a second copy.
+
 - `specs/` — the loop's own state now lives in this repo: `LOOP.md` (protocol v1.1),
   `LOOP_STATE.md` (detected stack, scored backlog, Run Log, next-iteration plan),
   `LOOP_LEARNINGS.md`, and `REFERENCE.md`.

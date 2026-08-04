@@ -18,7 +18,7 @@ The skill checks whether `specs/LOOP.md` exists in the working repo.
 | Phase | What happens | Where the output lands |
 |---|---|---|
 | 0 | Orientation: check the branch, finish any uncommitted prior run, read learnings → state → changelog → readme, plus Claude Code memory | a 4-line summary in the report |
-| 1 | Score the candidates, pick **one**, write this iteration's Definition of Done **before any code** | `specs/LOOP_STATE.md` |
+| 1 | Score the candidates, pick **one**, write this iteration's Definition of Done **before any code**. A thin backlog is what `discover` is for — it supplies candidates from repo evidence instead of from invention | `specs/LOOP_STATE.md` |
 | 2 | Look up what is genuinely unknown; use the cache for what is not | `specs/REFERENCE.md` |
 | 3 | Inventory every call site, *then* implement. `fe` / `be` load inline | `specs/LOOP_STATE.md`, then the code |
 | 4 | Verify on the real artifact — `qa-runner` subagent every run, plus `bug-hunter` if a trust boundary moved | `docs/evidence/<date>-<task>/` |
