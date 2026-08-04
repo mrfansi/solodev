@@ -29,6 +29,11 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
+- **Protocol v1.11: prune before you add.** §4C used to say pruning is what you do
+  when a cap fails. That turned every cap into a mid-edit interruption — check the
+  budget first, make room, then write. The §4D bloat guardrail is also explicit now
+  that its five-line allowance is measured net, which it had never said.
+
 - **`/solodev:discover` runs in a subagent.** A whole-repo sweep is thousands of lines
   of grep output mined down to at most five backlog rows, and until now every one of
   those lines landed in the context of whoever asked. The skill now sets

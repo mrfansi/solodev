@@ -1,4 +1,4 @@
-# LOOP PROTOCOL · v1.10
+# LOOP PROTOCOL · v1.11
 
 > This file is **the protocol source of truth for this repository**. The loop may
 > patch it (§4D). Do not overwrite it from the skill template unless asked.
@@ -350,7 +350,9 @@ the next run worse than no map would.
 - **Both caps are enforced by `scripts/validate.py`, not by good intentions** — a cap
   that lives only in prose cannot fail, and this one silently did for four runs.
   The budgets: `LOOP_STATE.md` ≤ 14000 bytes, `LOOP_LEARNINGS.md` ≤ 150 lines.
-  Pruning is what you do when the gate fails, not a thing you remember to do.
+  **Prune before you add**, not when the gate fails: check the budget, make room, then
+  write. A cap that fires mid-edit costs a round trip, and round trips are what a run
+  is actually billed for.
 
 ### D. Meta-review (every 5 runs)
 Compute trends from the Run Log: is the rubric score rising? are iterations falling?
@@ -368,7 +370,7 @@ Metric  : expect <metric> to improve from X to Y
 **Patch guardrails (absolute):**
 1. §1 invariants may not be removed or weakened.
 2. One patch changes at most 2 sections.
-3. The protocol may not bloat: adding >5 lines requires deleting as many.
+3. The protocol may not bloat: a **net** gain above 5 lines requires deleting as many.
 4. A patch is only valid if it points at a **real failure recorded in the Run Log**.
 5. Bump the protocol version in the title, and append the entry where §12 says —
    never into this file.
