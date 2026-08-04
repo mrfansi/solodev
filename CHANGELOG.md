@@ -7,6 +7,26 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- **`scripts/token-cost.py` — what a session actually processed.** It reads the
+  `usage` block Claude Code records for every assistant message in its own
+  transcripts, including each subagent's, so the figure is measured rather than
+  estimated. It reports turns, the three token classes separately, and an
+  input-equivalent total — never a single number called "cost", because roughly nine
+  tenths of the volume is cache reads billed at about a tenth of fresh input, and the
+  ratio between volume and spend is not constant. `skills/autopilot/references/PROTOCOL.md`
+  §4B now requires the figure in every Run Log line.
+
+  Two things it makes visible that guesswork had hidden. A session's prompt tokens are
+  the sum of the context at every turn, so a token admitted early is re-read by every
+  turn after it — turn count, not file size, is what moves. And a subagent's context is
+  its own: they run a fifth to two fifths of a session's tokens, which is far more than
+  the size of the reports they hand back suggests.
+
+  Figures live in the dated evidence directory rather than here, because transcripts
+  keep growing and a number pasted into a changelog is wrong by the next session.
+
 ### Changed
 
 - **`/solodev:discover` runs in a subagent.** A whole-repo sweep is thousands of lines

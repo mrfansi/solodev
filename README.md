@@ -120,6 +120,14 @@ frontmatter block, and every cross-reference between skills, agents, and this RE
 GitHub Actions runs the same command on every push and pull request, so forgetting it
 locally costs you a red check rather than a silent regression.
 
+`python3 scripts/token-cost.py` reports what a session processed, read out of Claude
+Code's own transcripts rather than estimated — turns, the three token classes, each
+subagent, and an input-equivalent total. It exists because the interesting number is
+not any single file's size: a session's tokens are the sum of its context at every
+turn, so anything admitted early is re-read by every turn after it, and a subagent's
+context is its own and is easy to underestimate from the size of the report it
+returns.
+
 ## Design notes
 
 **The loop improves itself, but cannot bloat.** Rules only come from things that
