@@ -70,6 +70,12 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
+- **The README no longer suggests running the loop on a short timer**, and says why:
+  a scheduled run fires inside the conversation that scheduled it, where it re-reads
+  everything the previous run accumulated. It now states the cadence — one run, then a
+  new conversation — and defines what a new conversation actually is, since "start a
+  new session" is not an instruction anyone can follow without that.
+
 - `scripts/validate.py` now checks `hooks/hooks.json`: that the file exists, that it
   parses, that every event name is a real Claude Code hook event, and that every
   `${CLAUDE_PLUGIN_ROOT}` script path resolves. Nothing at runtime reports a hook that
@@ -105,6 +111,14 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   so no figure is claimed here.
 
 ### Fixed
+
+- **The token figure a run reported was the whole conversation's, not the run's.**
+  Several runs share one conversation, so the number restated a running total and no
+  per-run trend could be read from it at all. A run now records where it starts and
+  reports the difference, with the conversation total printed beside it in a shape you
+  cannot confuse for the first. A stale or hand-edited marker is refused rather than
+  subtracted — the failure of a measurement tool is inherited by everything downstream,
+  so it prints nothing rather than a plausible wrong number.
 
 - **Token figures were undercounting output by roughly sixteen times.** Claude Code
   repeats a message's `usage` on every content-block line, and while the three prompt

@@ -76,12 +76,31 @@ case against throwaway repositories, or read
 ## The loop
 
 ```
-/solodev:autopilot                      # run, then reschedule at a self-chosen pace
-/solodev:autopilot 45m                  # every 45 minutes
-/solodev:autopilot 2h fix export bug    # every 2 hours, with a request attached
-/solodev:autopilot once add PDF export  # exactly one run
+/solodev:autopilot                      # run once, then reschedule itself
+/solodev:autopilot once add PDF export  # exactly one run, no scheduling
+/solodev:autopilot 4h fix export bug    # on a timer, with a request attached
 /solodev:autopilot stop                 # cancel scheduling
 ```
+
+**Run it once, then start a new Claude Code session for the next one.** That is the
+cadence, and it is worth a paragraph because the reason is not obvious.
+
+What a run costs is set by the conversation it happens in, not by the run. Every turn
+re-reads everything before it, so a second run in the same conversation begins where
+the first ended and pays for all of it again. Measured here, over a handful of runs:
+one starting a fresh conversation cost several times less per turn than one arriving
+late in a long conversation. Treat that as the direction, not as a rate — it is a
+small sample, and your own runs are the ones that matter.
+
+**A new session means quitting Claude Code and starting it again** — a new
+conversation, not a new terminal tab and not clearing the screen. Nothing is lost when
+you do: the loop keeps its state in the repo, so the next run reads the last one's
+backlog, learnings and plan and carries straight on.
+
+A timer cannot do this, because a scheduled run fires inside the conversation that
+scheduled it. That is why `45m` is no longer suggested here. If you do want a timer,
+pick an interval longer than you would sit in one conversation, and expect the second
+and third runs on it to cost more than the first.
 
 The first run in a repo **bootstraps** rather than shipping a feature: it writes the
 protocol to `specs/LOOP.md`, detects the stack, creates `README.md`, `CHANGELOG.md`,
