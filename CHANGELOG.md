@@ -7,6 +7,16 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Changed
+
+- **Branch naming follows `<type>/<backlog-id>-<what-it-does>`** instead of
+  `loop/run-<N>-<slug>`. The type matches the Conventional Commit the run will write,
+  so branch and commit cannot disagree; the backlog id makes the branch traceable
+  without opening anything; the description says what the branch does rather than
+  which run made it. Protocol v1.3. `scripts/validate.py` warns on a branch that does
+  not conform — a warning, not an error, so it never fails the gate on `main` or in a
+  repo that has not adopted the loop.
+
 ## [0.2.0] - 2026-08-04
 
 ### Added

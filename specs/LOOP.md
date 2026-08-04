@@ -1,4 +1,4 @@
-# LOOP PROTOCOL · v1.2
+# LOOP PROTOCOL · v1.3
 
 > This file is **the protocol source of truth for this repository**. The loop may
 > patch it (§4D). Do not overwrite it from the skill template unless asked.
@@ -227,8 +227,11 @@ failed**, whatever the code achieved.
 
 ### Phase 8 — Review, commit & PR
 
-The run works on its own branch, `loop/run-<N>-<short-slug>`, branched from the
-default branch once Phase 0 confirmed a clean tree.
+The run works on its own branch, branched from the default branch once Phase 0
+confirmed a clean tree, named **`<type>/<backlog-id>-<what-it-does>`** — say
+`feat/f2-ship-cut-releases`. Type follows the id (`F-`/`E-`→`feat`, `B-`→`fix`,
+`R-`→`refactor`, `C-`→`chore`), matching the run's Conventional Commit (§11A). Run
+numbers are bookkeeping and stay in `specs/LOOP_STATE.md`.
 
 1. **Review before committing** — `Agent` with `subagent_type:
    "solodev:pr-reviewer"`, against the working diff (§11F). It cannot edit, so it
@@ -550,3 +553,5 @@ decide whether to finish the current slice first.
 - **v1.2** — §3 Phase 1: a standing user directive to ship a feature outranks the
   cadence's *prohibition*, not its choice of slice. Run #3's Run Log records it
   breaking that directive; the user ruled the directive wins (`C-5`). §1 untouched.
+- **v1.3** — §3 Phase 8: branches are `<type>/<backlog-id>-<what-it-does>`. User
+  directive; guardrail 4 governs what the loop may patch, not what the user may.

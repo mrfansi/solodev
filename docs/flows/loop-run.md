@@ -41,7 +41,8 @@ work — there is nothing to isolate, and a subagent would only add a context ha
 
 ## One run, one branch, one PR
 
-Each run branches from the default branch as `loop/run-<N>-<short-slug>` and ends in a
+Each run branches from the default branch as `<type>/<backlog-id>-<what-it-does>` — see
+protocol §3 Phase 8 for the type table — and ends in a
 **draft** PR. Promoting it to ready, and merging, are the user's decisions. No remote
 or no `gh` → the run commits to the branch, says the PR step was skipped, and carries
 on.
