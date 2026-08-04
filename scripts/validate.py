@@ -6,6 +6,7 @@ Exits non-zero on any error. Warnings do not fail the run.
 """
 import json
 import re
+import subprocess
 import sys
 from pathlib import Path
 
@@ -132,12 +133,50 @@ documented_agents = set(re.findall(r"`solodev:([a-z0-9-]+)`", readme)) & set(age
 for name in sorted(agents - documented_agents):
     err(f"README.md: agent {name!r} ships but is not documented")
 
+# the loop's deliverable must be committable. Run #1 shipped a .gitignore listing
+# specs/ and docs/; git commit would have exited 0 with the whole run's output absent.
+# Files AND directories. A directory-only check misses `*.txt`, which is enough to
+# swallow every evidence transcript while the two roots still look clean.
+roots = [r for r in ("specs", "docs") if (ROOT / r).exists()]
+if roots:
+    listed = subprocess.run(
+        ["git", "ls-files", "--cached", "--others", "--", *roots],
+        cwd=ROOT, capture_output=True, text=True,
+    )
+    deliverable = sorted({
+        *roots,
+        *(str(p.relative_to(ROOT)) for r in roots for p in (ROOT / r).rglob("*") if p.is_dir()),
+        *(l for l in listed.stdout.split("\n") if l.strip()),
+    })
+    # --no-index is load-bearing: without it git skips any path already in the
+    # index, so once specs/ is tracked the check silently passes forever. We are
+    # testing the ignore rule, not the current index state — a newly ignored path
+    # keeps its tracked files but swallows every new one in silence.
+    # --stdin keeps argv bounded; docs/evidence/ gains a directory every run.
+    found = subprocess.run(
+        ["git", "check-ignore", "--no-index", "--stdin"],
+        cwd=ROOT, capture_output=True, text=True, input="\n".join(deliverable),
+    )
+    # 0 = something matched, 1 = nothing matched. Anything else (128 outside a git
+    # repo) means the check did not run, which must not read as a pass.
+    if found.returncode not in (0, 1):
+        err(f"git check-ignore could not run ({found.stderr.strip() or 'unknown'}); "
+            f"the deliverable-not-ignored check did NOT execute")
+    for path in sorted({p for p in found.stdout.split("\n") if p.strip()}):
+        err(
+            f".gitignore excludes {path}, which protocol §2 and §6 require every "
+            f"run to commit. A commit would succeed with it missing, and say nothing"
+        )
+
 # a claim about how many agents cannot edit must match the frontmatter
 no_edit = {n for n in agents if "Edit" in frontmatter(ROOT / "agents" / f"{n}.md").get("disallowedTools", "")}
-for path in (ROOT / "README.md", ROOT / "skills/loop/SKILL.md"):
+for path in (ROOT / "README.md", ROOT / "skills/loop/SKILL.md", ROOT / "docs/architecture.md"):
+    if not path.exists():
+        continue
     text = path.read_text()
     words = {"one": 1, "two": 2, "three": 3, "four": 4, "five": 5}
-    for claim, whole in re.findall(r"([Oo]ne|[Tt]wo|[Tt]hree|[Ff]our|[Ff]ive) of the (one|two|three|four|five)", text):
+    pat = r"(one|two|three|four|five) of the (one|two|three|four|five)"
+    for claim, whole in re.findall(pat, text, re.IGNORECASE):
         if words[claim.lower()] != len(no_edit) or words[whole] != len(agents):
             err(
                 f"{path.relative_to(ROOT)}: claims '{claim} of the {whole}' agents cannot edit, "

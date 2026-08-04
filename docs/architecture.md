@@ -60,8 +60,31 @@ When adding a rule, ask which of these it is:
 
 **Never in two places.** The invariants used to live in both `skills/loop/SKILL.md`
 and the protocol; they were consolidated into protocol §1 because two copies of a rule
-drift and the reader cannot tell which one is current. That consolidation is the model
-for every future one.
+drift and the reader cannot tell which one is current.
+
+Run #3 finished that job: the agent-per-phase table, the work-intake and severity
+table, the branch-and-draft-PR rules, and the layer-1 state-file table all moved to
+pointers. **Five clauses survived** because they exist nowhere else.
+
+**The method needs a warning attached, because run #3's own execution of it failed
+twice.** The rule is: grep every candidate against `specs/LOOP.md` before deleting it,
+and keep anything absent. Two rules were deleted anyway, and neither was caught by the
+grep:
+
+- A **two-clause table row** was checked as one claim. Its first half was in §3
+  Phase 1; its second half — a feature deferred by the cadence becomes the next run's
+  first candidate — was nowhere. `qa-runner` filed it S1.
+- A **quantifier** was not read. The skill said "**each agent's** prompt must carry…";
+  the protocol says "**its** prompt", scoped to one agent. A phrase match found the
+  sentence and certified the deletion. `pr-reviewer` caught it.
+
+So: **split multi-clause rows before grepping, and match the quantifier, not just the
+phrase.** A grep that finds similar words is not proof the rule survives. Both rules
+were restored; both failures are recorded in `specs/LOOP_LEARNINGS.md`.
+
+`skills/loop/SKILL.md` now holds only what the protocol does not: scheduling, argument
+parsing, the bootstrap sequence, stack detection, layer-2 memory, and the five orphans
+above.
 
 ## Scheduling is the exception
 

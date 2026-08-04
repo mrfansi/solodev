@@ -1,0 +1,73 @@
+DUPLICATION AUDIT — every candidate deletion checked against specs/LOOP.md
+Rule from the run #2 plan: if it is not in the protocol, it is not a
+duplicate — leave it. Each claim below is grepped, not remembered.
+
+BLOCK A — 'Work attached to the invocation' (SKILL.md 122-135)
+  classified and scored per §10 before selection             DUP -> §3 Phase 1
+  S1 overrides cadence and inherited plan                    DUP -> §10 severity table
+  S2 gets a scoring bonus                                    DUP -> §10 severity table
+  feature deferred by the audit cadence                      DUP -> §3 Phase 1
+  only sanctioned way to break cadence                       DUP -> §10
+
+BLOCK B — 'Companion agents' (SKILL.md 139-181)
+  audits run as separate subagents, not inline               DUP -> §3 Phase 4
+  qa-runner every run incl. refactor runs                    DUP -> §3 Phase 4
+  bug-hunter only on a trust boundary                        DUP -> §3 Phase 4
+  ux+ui only on a user-facing surface                        DUP -> §3 Phase 5
+  spawn phase-mates in a single message                      DUP -> §3 Phase 4/5
+  pr-reviewer before every commit                            DUP -> §3 Phase 8
+  prompt must carry slice/how-to-run/tightest/evidence       DUP -> §3 Phase 4
+  bug-hunter Critical/High = S1, overrides cadence           NOT IN PROTOCOL — keep
+  ux sev4 / ui blocker fails the rubric                      DUP -> §3 Phase 5
+  fe/be load inline in Phase 3                               DUP -> §3 Phase 3
+  TASK loads inline in Phase 3                               NOT IN PROTOCOL — keep
+  pr-new runs INLINE specifically                            NOT IN PROTOCOL — keep
+  degraded-but-honest fallback if an agent is unavailable    NOT IN PROTOCOL — keep
+
+BLOCK C — 'One run, one branch, one PR' (SKILL.md 183-194)
+  branch name loop/run-<N>-<slug> from default branch        DUP -> §3 Phase 8
+  PR stays a draft; promoting/merging is the user's          DUP -> §3 Phase 8
+  no remote or no gh -> skip, say so, carry on               DUP -> §3 Phase 8
+
+BLOCK D — 'MEMORY' layer 1 table (SKILL.md 203-210)
+  LOOP_STATE holds backlog/task/Run Log/stack/next plan      DUP -> §2 table
+  LOOP_LEARNINGS 150 lines max                               DUP -> §2 table
+  REFERENCE caches external API/patterns                     DUP -> §2 table
+  docs/evidence holds Phase 4 evidence                       DUP -> §2 table
+  LAYER 2 Claude Code memory contents                        NOT IN PROTOCOL — keep
+
+NOTE: §2 of the protocol says outright: 'Claude Code memory (the second
+layer) is governed by SKILL.md'. Layer 2 is the skill's own, not a copy.
+
+===== CORRECTION — the four negatives, re-checked by hand =====
+
+The script above produced two FALSE negatives. Its regexes were single-line;
+the protocol wraps its prose, so a claim spanning a line break did not match.
+Verified directly instead:
+
+  1. "bug-hunter Critical/High = S1, overrides cadence"
+     ACTUALLY A DUPLICATE. specs/LOOP.md:167 — "Any Critical or High finding
+     is an **S1**: it overrides the cadence and is fixed in this run, before
+     the commit." The script missed it because the sentence begins at the end
+     of line 167 and continues on 168. -> safe to delete from SKILL.md.
+
+  2. "task loads inline in Phase 3"
+     GENUINELY ABSENT. `grep -n 'solodev:task|the backlog filer' specs/LOOP.md`
+     returns nothing. §3 Phase 3 names only fe and be. -> KEEP in SKILL.md.
+
+  3. "pr-new runs INLINE specifically"
+     PARTIAL. specs/LOOP.md:240 delegates to pr-new and says it opens a draft,
+     so that half is a duplicate. It never says pr-new runs inline rather than
+     as a subagent, which is the distinction the skill is drawing.
+     -> KEEP the inline/subagent clause, DELETE the draft-PR restatement.
+
+  4. "degraded-but-honest fallback when an agent is unavailable"
+     GENUINELY ABSENT. Nothing in the protocol covers a partially installed
+     plugin. -> KEEP in SKILL.md.
+
+Net: three clauses survive the cull because they exist nowhere else. That is
+the mitigation working — the run #2 plan required grepping before deleting
+precisely so a unique rule could not be lost inside a bulk dedup.
+
+A false negative here is cheap (a real duplicate survives). A false positive
+would delete a rule the loop needs. The audit is deliberately biased that way.

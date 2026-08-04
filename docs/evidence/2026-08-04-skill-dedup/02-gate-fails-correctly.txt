@@ -1,0 +1,38 @@
+C-4 — the two new validator checks, shown FAILING then PASSING.
+Per the [docs] learning: run the command, do not assert it would work.
+
+That discipline earned its keep here. The first draft of check 1 used
+plain `git check-ignore`, which SKIPS any path already in the index.
+specs/ is tracked, so the check silently passed on the injected bug —
+a gate that could never fail. --no-index tests the ignore RULE instead
+of the index state, which is the thing that actually matters: a newly
+ignored directory keeps its tracked files and swallows every new one.
+
+===== baseline: real repo =====
+skills: 11  agents: 5 (4 without edit tools)
+OK
+  exit=0
+
+===== check 1: .gitignore excluding the deliverable =====
+  (injecting 'specs/' and 'docs/' — the exact run #1 bug)
+skills: 11  agents: 5 (4 without edit tools)
+ERROR .gitignore excludes specs/, which protocol §2 and §6 require every run to commit. A commit would succeed with it missing, and say nothing
+ERROR .gitignore excludes docs/, which protocol §2 and §6 require every run to commit. A commit would succeed with it missing, and say nothing
+FAIL
+  exit=1
+  (restored)
+  exit=0
+
+  first-draft behaviour, for the record:
+  $ git check-ignore specs             -> exit 1  (skipped: tracked)
+  $ git check-ignore --no-index specs  -> exit 0  (correctly ignored)
+
+===== check 2: agent-count claim drifting in docs/architecture.md =====
+  (changing 'Four of the five' to 'Three of the five')
+  this file was NOT scanned before C-4; the old gate passed on it
+skills: 11  agents: 5 (4 without edit tools)
+ERROR docs/architecture.md: claims 'Three of the five' agents cannot edit, but 4 of the 5 have no edit tools
+FAIL
+  exit=1
+  (restored)
+  exit=0

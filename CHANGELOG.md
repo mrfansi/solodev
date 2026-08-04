@@ -33,6 +33,17 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   block, and every cross-reference between skills, agents, and the README. Now wired
   in as the repo's lint and test gate.
 
+### Changed
+
+- **`scripts/validate.py` gained two checks it should always have had.** It now fails when
+  `.gitignore` would exclude any file or directory under `specs/` or `docs/` — what
+  the protocol requires every run to commit, and the exact bug that would have
+  silently emptied the first bootstrap commit. It also scans `docs/architecture.md`
+  for the agent-count claim. **The check took four attempts**: the first could never
+  fire (`git check-ignore` skips tracked paths), the second missed `docs/evidence/`,
+  the third missed `*.txt`. Each passed the obvious injection and failed a narrower
+  one. Every version was demonstrated failing on broken input before being trusted.
+
 ### Fixed
 
 - **Install command pointed at a repository that does not exist.** `README.md` said
@@ -45,6 +56,19 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Internal
 
+- **`skills/loop/SKILL.md` no longer restates the protocol.** The agent-per-phase
+  table, the work-intake and bug-severity table, the branch-and-draft-PR rules, and
+  the layer-1 state-file table each existed in both the skill and `specs/LOOP.md`;
+  the skill now points at the section that owns them. Roughly 500 tokens saved on
+  every run; exact figures in `docs/evidence/2026-08-04-skill-dedup/`. Five clauses survived because they exist nowhere else:
+  that `task` loads inline, that `pr-new` runs inline rather than as a subagent, what
+  to do when a subagent type is unavailable, that every agent's prompt must carry its
+  slice and evidence path, and that a feature deferred by the cadence becomes the next
+  run's first candidate.
+  **The last two were deleted first and restored after review** — one because a
+  two-clause table row was checked as a single claim, one because a phrase match
+  ignored the quantifier ("each agent's" against the protocol's "its"). The
+  grep-before-delete method needs both guards; see `docs/architecture.md`.
 - `.gitignore` now carries a comment stating that `specs/` and `docs/` must stay
   tracked. Run #1 found both directories ignored in its working tree, which would
   have produced a bootstrap commit containing none of the machinery it installed —

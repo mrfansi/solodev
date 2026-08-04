@@ -26,13 +26,43 @@
   ~6,151 tokens with a per-section breakdown, which is what turned a 40% cut into a
   concrete plan instead of a hunch.)
 
-- `[verification]` If a run's deliverable is files, then before Phase 8 run
-  `git add -n` on every directory the run created and confirm git would actually stage
-  them. (from: run #1 — `.gitignore` had grown `specs/` and `docs/` mid-run. `git
-  commit` would have exited 0 with those directories absent, the report would have
-  claimed success, and the next session would have found an empty `specs/`. The whole
-  run's output, lost silently. Reading the diff would not have caught it; only running
-  git did.)
+- `[verification]` **Retired in run #3 — now enforced by code.** `scripts/validate.py`
+  runs `git check-ignore --no-index` against `specs/`, `docs/`, **and every directory
+  beneath them**, failing the gate if any is excluded. §4C requires deleting a rule
+  once code guards it. Proof it actually fails:
+  `docs/evidence/2026-08-04-skill-dedup/08-gate-subpath-fixed.txt`.
+  Scope note: the check covers the two trees the protocol mandates. A run that creates
+  a deliverable directory *outside* `specs/` and `docs/` is still on its own — say so
+  in the report if you ever do.
+
+- `[gates]` If you add a check to a quality gate, then break the thing on purpose and
+  watch the gate fail before you trust it — and break it the *narrowest* way, not the
+  most obvious. (from: run #3, twice over. First the check used plain `git
+  check-ignore`, which skips paths already in the index, so it passed on the injected
+  bug and would have shipped unable to fire at all. Then, fixed with `--no-index`, it
+  still only tested the literal roots: `qa-runner` broke it with `docs/evidence/`, one
+  level down, enough to swallow a whole run's Phase 4 output while the gate stayed
+  green. Both times the obvious injection passed and a narrower one exposed the hole.)
+
+- `[claims]` If a number describes a file the run is still editing, then do not retype
+  it into prose — state the direction and point at the generated file. (from: run #3 —
+  the SKILL.md size and the Phase 0 total were copied into `LOOP_STATE.md` and
+  `CHANGELOG.md`, then went stale three separate times: once when the measurement was
+  regenerated, once when propagating it changed the very files being measured, and
+  once more on the next edit. `pr-reviewer` found three mutually inconsistent copies
+  and a headline saving overstated by ~20%. A figure in a file that keeps changing is
+  wrong the moment it is written.)
+
+- `[refactor]` If a deletion candidate is a table row or a sentence with more than one
+  clause, **or turns on a quantifier**, then check each clause and the quantifier
+  separately — a phrase match is not proof. (from: run #3, twice. The audit collapsed
+  a two-clause row into one check, matched the first half against §3 Phase 1, marked
+  the whole row a duplicate, and deleted "deferred → it becomes the next run's first
+  candidate", which exists nowhere else — `qa-runner`, S1. Separately, the skill's
+  "**each agent's** prompt must carry…" was matched against the protocol's "**its**
+  prompt", which is scoped to one agent; a rule binding five agents was deleted and
+  the verification transcript certified it — `pr-reviewer`. The manual correction pass
+  only re-examined rows the script marked *keep*, so it never revisited a wrong *DUP*.)
 
 - `[docs]` If documentation states a command a user is expected to run, then run the
   command itself — not a check that its arguments look plausible. (from: run #1 —
