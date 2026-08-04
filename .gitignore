@@ -1,4 +1,17 @@
-# Runtime state only. specs/ and docs/ are the loop's deliverable and MUST stay
-# tracked — see protocol §2 and §6. Ignoring them empties every bootstrap commit
-# without erroring. Caught by run #1 QA.
+# Runtime state.
 .omc/
+
+# The loop's own workspace. NEVER COMMITTED — user directive, 2026-08-04.
+#
+# docs/evidence/ holds raw transcripts of whatever commands a run happened to
+# run. That is an open-ended capture surface: an env dump, an API response, a
+# curl with an auth header, and the credential is in git history forever.
+# specs/ is workflow bookkeeping that belongs to whoever runs the loop, not to
+# the product being built.
+#
+# Cost, stated plainly: the loop no longer survives a fresh clone. See
+# protocol §2 — a new checkout has no specs/LOOP.md, so /solodev:loop
+# bootstraps from scratch and the backlog, Run Log and learnings do not travel.
+# They persist for whoever holds the working copy, and no further.
+specs/
+docs/

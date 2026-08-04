@@ -117,6 +117,13 @@ gh pr create --title "<title>" --body-file <file> --base "$BASE"
 
 Report the PR URL when done.
 
+## Never leak the workflow
+
+A PR body is read by whoever reviews the product. **Do not name the loop, a run
+number, a backlog id, or a phase in it.** Describe the change and why it was made —
+identical to what you would write if you had made it by hand. The loop's bookkeeping
+lives in `specs/LOOP_STATE.md`, which is not committed.
+
 ## When the loop skill invokes this
 
 Runs unattended after a run commits, so:

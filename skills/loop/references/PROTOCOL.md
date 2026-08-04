@@ -1,4 +1,4 @@
-# LOOP PROTOCOL · v1.3
+# LOOP PROTOCOL · v1.4
 
 > This file is **the protocol source of truth for this repository**. The loop may
 > patch it (§4D). Do not overwrite it from the skill template unless asked.
@@ -54,6 +54,21 @@ User satisfaction outranks feature completeness.
 | `CHANGELOG.md` | the `[Unreleased]` section | yes, every run (§6) |
 | `docs/**` | flow and architecture documentation | yes, every run (§6) |
 | `docs/evidence/<date>-<task>/` | Phase 4 verification evidence | yes |
+
+**`specs/` and `docs/` are NEVER committed.** They are the loop's workspace, not the
+product. `.gitignore` must list both, and the quality gate fails if either is tracked.
+Two reasons, and the second is the fatal one:
+
+1. They are the *workflow's* bookkeeping. A repo's history should record what the
+   product became, not which run scored what.
+2. `docs/evidence/` stores raw transcripts of whatever commands a run happened to run.
+   That is an open-ended capture surface — an `env` dump, an API response, a `curl`
+   with an auth header — and a credential committed to git history is permanent.
+
+The cost is real and is not hidden: **the loop does not survive a fresh clone.** A new
+checkout has no `specs/LOOP.md`, so `/solodev:loop` bootstraps from scratch and the
+backlog, Run Log and learnings do not travel. They persist for whoever holds the
+working copy, and no further. Back them up outside git if they matter.
 
 Claude Code memory (the second layer) is governed by SKILL.md — it holds only what
 is **not** in the repo. Never duplicate the backlog or Run Log into it.
@@ -357,6 +372,21 @@ Create it if missing. Must cover: what this product is, how to install it, how t
 it, and the current feature status. **Update it whenever a run changes how the
 product is used.**
 
+**Never write anything about the loop, this protocol, or any solodev skill into
+README.md.** It documents the product to its users. The loop is *how the product got
+built* — process, not product — and a reader installing it does not care and must not
+be told. Fatal rather than stylistic: it leaks the maintainer's workflow onto the
+public face of someone else's project. The same holds for `CHANGELOG.md` — log what
+changed for a user, never which run changed it.
+
+Test each line: **would it still belong if the product had been built by hand?** If
+not, it belongs in `specs/LOOP_STATE.md`.
+
+One exception: a repo whose *product is the workflow tooling itself*. This plugin's
+own README documents `/solodev:loop` because the loop is the thing being shipped —
+product documentation, not workflow leakage. The same test decides it, since built by
+hand that README would say exactly the same.
+
 ### CHANGELOG.md
 Keep a Changelog format plus SemVer. Create it if missing. Every run adds an entry
 under `## [Unreleased]` in the appropriate subsection:
@@ -555,3 +585,8 @@ decide whether to finish the current slice first.
   breaking that directive; the user ruled the directive wins (`C-5`). §1 untouched.
 - **v1.3** — §3 Phase 8: branches are `<type>/<backlog-id>-<what-it-does>`. User
   directive; guardrail 4 governs what the loop may patch, not what the user may.
+- **v1.4** — §2: `specs/` and `docs/` are never committed; the gate fails if either is
+  tracked. §6: nothing about the loop reaches `README.md` or `CHANGELOG.md`, except
+  where the workflow tooling *is* the product. Both from live use — the plugin was
+  contaminating the repos it ran in. Three sections and no Run Log failure: guardrails
+  2 and 4 bind the loop, not the user.
