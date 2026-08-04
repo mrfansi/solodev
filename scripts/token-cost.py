@@ -4,6 +4,8 @@
     python3 scripts/token-cost.py            # this project's newest session
     python3 scripts/token-cost.py --all      # every session, oldest first
     python3 scripts/token-cost.py <id>       # one session, full or 8-char prefix
+    python3 scripts/token-cost.py --agents   # every subagent ever spawned, by type
+    python3 scripts/token-cost.py --selfcheck  # assert the accounting still holds
 
 Why this exists: for eight runs the loop reported the size of the files it reads at
 startup and called that its cost, without ever measuring the whole it was a part of.
@@ -58,7 +60,7 @@ def read(path: str) -> dict:
     `<synthetic>` stubs for things like a rate-limit notice, and counting those
     would inflate the turn count the same way the per-block duplicates did.
     """
-    seen: set[str] = set()
+    seen: dict[str, int] = {}   # message id -> the output figure counted so far
     curve: list[int] = []
     fresh = write = cached = out = agents = orphans = 0
     for line in open(path, encoding="utf-8", errors="replace"):
@@ -81,16 +83,24 @@ def read(path: str) -> dict:
         if not mid:
             orphans += 1
             continue
+        got = usage.get("output_tokens") or 0
         if mid in seen:
+            # The three input fields repeat identically, but `output_tokens` grows as
+            # the message streams: early blocks carry a partial count, the last block
+            # the total. Keeping the first copy undercounted output ~16x, and output
+            # is the heaviest-weighted class. Take the largest and bank the delta.
+            if got > seen[mid]:
+                out += got - seen[mid]
+                seen[mid] = got
             continue
-        seen.add(mid)
+        seen[mid] = got
+        out += got
         i = usage.get("input_tokens") or 0
         w = usage.get("cache_creation_input_tokens") or 0
         r = usage.get("cache_read_input_tokens") or 0
         fresh += i
         write += w
         cached += r
-        out += usage.get("output_tokens") or 0
         if i + w + r:
             curve.append(i + w + r)
     return {
@@ -113,6 +123,49 @@ def weighted(s: dict) -> int:
 def subagents(session_id: str) -> list[dict]:
     return [read(p) for p in
             sorted(glob.glob(f"{TRANSCRIPTS}/{session_id}/subagents/*.jsonl"))]
+
+
+def by_agent_type() -> None:
+    """Total bill per agent type, across every session.
+
+    Totals, never averages. Deciding whether a check is worth keeping is a question
+    about the bill it removes, and a per-unit average cannot answer it: drop the
+    dearest item and the bill falls while the average rises. That mistake has been
+    made here four times, and once nearly became a binding rule.
+    """
+    totals: dict[str, dict] = {}
+    skipped = 0
+    for meta in glob.glob(f"{TRANSCRIPTS}/*/subagents/*.meta.json"):
+        try:
+            kind = json.load(open(meta, encoding="utf-8")).get("agentType") or "unknown"
+        except (ValueError, OSError):
+            skipped += 1
+            continue
+        path = meta[: -len(".meta.json")] + ".jsonl"
+        if not os.path.exists(path):
+            skipped += 1
+            continue
+        s = read(path)
+        d = totals.setdefault(kind, {"n": 0, "turns": 0, "ie": 0})
+        d["n"] += 1
+        d["turns"] += len(s["curve"])
+        d["ie"] += weighted(s)
+    if not totals:
+        print("No subagent transcripts. Either none were spawned, or this project has "
+              "not run one since Claude Code started recording them.")
+        return
+    grand = sum(d["ie"] for d in totals.values()) or 1
+    print(f"  {'agent type':<28} {'spawns':>6} {'turns':>6} {'input-equiv':>13}  share")
+    for kind, d in sorted(totals.items(), key=lambda kv: -kv[1]["ie"]):
+        print(f"  {kind:<28} {d['n']:>6} {d['turns']:>6} {d['ie']:>13,}"
+              f"  {d['ie'] * 100 // grand:>3}%")
+    print(f"  {'TOTAL':<28} {sum(d['n'] for d in totals.values()):>6} "
+          f"{sum(d['turns'] for d in totals.values()):>6} {grand:>13,}  100%")
+    if skipped:
+        print(f"\n  {skipped} subagent record(s) unreadable or missing their transcript, "
+              "excluded from every figure above")
+    print("\n  Totals, not averages — see the docstring. Before cutting any of these,"
+          "\n  list what it has actually caught.")
 
 
 def report(s: dict, verbose: bool) -> None:
@@ -157,13 +210,47 @@ def report(s: dict, verbose: bool) -> None:
           f"(+{kid_weighted // 1000}k subagents) / {turns} turns / {len(kids)} subagents")
 
 
+def selfcheck() -> int:
+    """The smallest thing that fails if the accounting breaks. `--selfcheck`."""
+    import tempfile
+    msg = lambda mid, out, blocks: json.dumps({"message": {
+        "id": mid, "content": [{"type": "text"}] * blocks,
+        "usage": {"input_tokens": 1, "cache_creation_input_tokens": 100,
+                  "cache_read_input_tokens": 1000, "output_tokens": out}}})
+    with tempfile.TemporaryDirectory() as d:
+        f = os.path.join(d, "t.jsonl")
+        # one message streamed over three blocks: output grows, the prompt repeats
+        with open(f, "w") as fh:
+            fh.write(msg("a", 2, 1) + "\n" + msg("a", 2, 1) + "\n" + msg("a", 500, 1) + "\n")
+            fh.write(msg("b", 7, 1) + "\n")
+            fh.write('{"message": {"content": [], "usage": {"input_tokens": 5}}}\n')
+            fh.write("{ truncated\n")
+        s = read(f)
+    assert len(s["curve"]) == 2, f"turns {len(s['curve'])}, want 2 — dedup by id"
+    assert s["output"] == 507, f"output {s['output']}, want 507 — take the LAST copy"
+    assert s["cached"] == 2000, f"cached {s['cached']}, want 2000 — prompt counted once"
+    assert s["orphans"] == 1, f"orphans {s['orphans']}, want 1 — no id, dropped, counted"
+    assert weighted(s) == int(1 * 2 + 100 * 1.25 * 2 + 1000 * 0.1 * 2 + 507 * 5)
+    print("selfcheck OK — dedup, streamed output, orphan count, weights")
+    return 0
+
+
 def main() -> int:
     flags = [a for a in sys.argv[1:] if a.startswith("--")]
     args = [a for a in sys.argv[1:] if not a.startswith("-")]
-    unknown = [f for f in flags if f != "--all"]
+    unknown = [f for f in flags if f not in ("--all", "--agents", "--selfcheck")]
     if unknown:
         print(f"Unknown flag: {' '.join(unknown)}", file=sys.stderr)
         return 2
+    if "--selfcheck" in flags:
+        return selfcheck()
+    if "--agents" in flags:
+        if args or "--all" in flags:
+            print("--agents reports every session at once and takes no session "
+                  "argument. Drop it, or drop --agents.", file=sys.stderr)
+            return 2
+        by_agent_type()
+        return 0
     every = "--all" in flags
     found = sorted(glob.glob(f"{TRANSCRIPTS}/*.jsonl"), key=os.path.getmtime)
     if not found:

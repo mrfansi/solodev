@@ -9,6 +9,15 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- **`token-cost.py --agents` — the bill, by agent type, across every session.** One
+  command for the question "is this check worth what it costs": spawns, turns and
+  total per agent type. Totals only, never averages — deciding whether to remove
+  something is a question about the bill it removes, and an average cannot answer it,
+  because dropping the dearest item lowers the bill while raising the mean.
+
+  `--selfcheck` asserts the accounting on a fixture: dedup by message id, the
+  streamed-output rule below, orphan counting, and the weights.
+
 - **`scripts/token-cost.py` — what a session actually processed.** It reads the
   `usage` block Claude Code records for every assistant message in its own
   transcripts, including each subagent's, so the figure is measured rather than
@@ -45,6 +54,14 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   so no figure is claimed here.
 
 ### Fixed
+
+- **Token figures were undercounting output by roughly sixteen times.** Claude Code
+  repeats a message's `usage` on every content-block line, and while the three prompt
+  fields are identical across those copies, `output_tokens` grows as the message
+  streams — the first copy is partial, the last is the total. Deduplicating by message
+  id kept the first. Since output carries the heaviest weight, every input-equivalent
+  figure came out about 1.3x low, and unevenly enough (1.11x to 1.54x) that it did not
+  cancel in any comparison between agents.
 
 - **`discover`'s seams could not see the loop's own workspace on a machine where
   `grep` is wrapped.** Ripgrep and token-proxy wrappers honour `.gitignore`, and the
