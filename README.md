@@ -15,7 +15,7 @@ audit, and QA skills it calls along the way.
 | `/solodev:be [target]` | Back-end engineering — boundaries, API and data design, transactions |
 | `/solodev:pr-new [title]` | Opens a PR with a title and body that follow GitHub best practice |
 | `/solodev:ship [bump]` | Cuts a release — derives the SemVer bump, moves the changelog, stops before tagging |
-| `/solodev:pr-review [pr]` | Reviews a PR and reports findings ranked by severity |
+| `/solodev:pr-review [pr]` | Reviews a PR, ranks findings by severity, posts them to the PR when one exists |
 | `/solodev:ux [flow]` | UX audit — task flows, cognitive load, error recovery |
 | `/solodev:ui [screen]` | UI audit — hierarchy, typography, spacing, contrast, states |
 | `/solodev:qa [change]` | QA — builds a test matrix, executes it, files reproducible bugs |

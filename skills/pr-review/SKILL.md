@@ -86,12 +86,47 @@ Where a claim in the PR description is checkable, check it rather than trusting 
 - <name it — a review that only finds fault teaches nothing about what to repeat>
 ```
 
-The verdict is a **recommendation**. Do not run `gh pr review --approve` or merge;
-approving is the user's call, and an automated approval defeats the purpose of
-review.
+## Post it to the PR
 
-Posting the review as a PR comment requires the user to ask — it is outward-facing
-and visible to everyone on the repo.
+A verdict that lives only in a chat session dies with the session. **Post the report
+as a review event** so it sits on the PR where the next reader finds it:
+
+**Read the body before sending.** A COMMENTED review cannot be deleted once posted —
+only a PENDING one can, and dismissal covers APPROVED and CHANGES_REQUESTED only.
+
+```bash
+gh pr review <pr> --comment --body-file <report>
+```
+
+**There is not always a PR.** Invoked from the loop, this review runs at Phase 8 step 1
+— against the working diff, before the commit and before `pr-new` opens anything. There
+is no `<pr>` to name, and blockers get fixed before the PR exists at all. In that case
+post nothing and say so; the findings reach the run report instead. Post only when
+invoked against a PR that already exists, which is the standalone path.
+
+`--comment` is not a lesser choice — for a PR you opened yourself, it is the **only**
+state GitHub allows. Both others are rejected outright:
+
+```
+$ gh pr review <own-pr> --approve
+GraphQL: Can not approve your own pull request
+
+$ gh pr review <own-pr> --request-changes
+GraphQL: Can not request changes on your own pull request
+```
+
+So a solo developer will never see `approved` or `changes_requested` on their own PR,
+with or without this skill. Say that once when it comes up, rather than letting the
+absence read as a failure. On someone else's PR both states are available — use
+`--request-changes` when a blocker survives verification, and leave `--approve` to a
+human, because an automated approval defeats the purpose of the review.
+
+**Never merge**, on any PR. Reviewing and merging are separate decisions and the
+second one is the user's.
+
+**Nothing about the workflow goes in the body** — no run number, no phase, no backlog
+id. Write what you would write reviewing this change by hand.
+
 
 ## When the loop skill invokes this
 

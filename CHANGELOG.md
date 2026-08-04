@@ -7,6 +7,26 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- **`/solodev:pr-review` now posts its findings to the pull request** as a `COMMENTED`
+  review, instead of leaving the verdict in a session that ends. The review sits where
+  the next reader finds it.
+
+  It posts `COMMENTED` because that is the only state GitHub permits on a pull request
+  you opened yourself — `--approve` and `--request-changes` are both rejected outright.
+  So `approved` and `changes_requested` never appear on a solo developer's own PR, with
+  or without this plugin, and the skill now says so rather than letting the absence read
+  as a failure. On someone else's PR `--request-changes` is used when a blocker
+  survives; approval is left to a human.
+
+### Changed
+
+- **A check added to a quality gate must be demonstrated failing before it is trusted**
+  — broken the narrowest way, not the most obvious, with both transcripts kept. Three
+  consecutive rounds of work on this plugin shipped a check that passed its obvious
+  test and could not catch the fault it existed for.
+
 ### Fixed
 
 - **Pull requests open ready for review instead of as drafts.** The rule said "always

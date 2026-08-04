@@ -1,4 +1,4 @@
-# LOOP PROTOCOL · v1.5
+# LOOP PROTOCOL · v1.6
 
 > This file is **the protocol source of truth for this repository**. The loop may
 > patch it (§4D). Do not overwrite it from the skill template unless asked.
@@ -232,6 +232,9 @@ and its score change stated explicitly.
 Run the format, lint, and test commands recorded under "Detected stack" in
 `specs/LOOP_STATE.md`. All must be green. New logic (parsers, formatters,
 validation, calculations, business rules) requires tests.
+
+**A check the run adds is not trusted until seen to fail.** Break what it guards the
+**narrowest** way, not the most obvious, and keep both transcripts — red and green.
 
 Record how many times a gate failed in the Run Log — that is a metric, not a shame.
 
@@ -598,3 +601,5 @@ decide whether to finish the current slice first.
   the user's. Draft cost a click before anything could happen and notified nobody on a
   solo repo — and promoting four of them by hand is where the stacked merge order went
   wrong.
+- **v1.6** — §3 Phase 6: a gate check must be shown failing, narrowly, before trust;
+  runs #2-#4 each shipped one that could not. Binds only executable checks.
