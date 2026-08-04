@@ -45,6 +45,11 @@ Pass the invocation back **verbatim** so the interval and plan survive into the 
 run. **Do not schedule if the run failed its gates** — a broken run repeating on a
 timer only multiplies the mess. Report the failure and let the user decide.
 
+`ScheduleWakeup`, `CronCreate`, and `CronDelete` may be deferred rather than loaded —
+fetch their schemas first (`ToolSearch`) instead of calling them blind. If they are
+unavailable altogether, say scheduling is unavailable, report the run, and stop; a run
+that silently fails to reschedule looks identical to one that never ran.
+
 **Be honest about the limits:** scheduling is session-only, and cron jobs also expire
 after 7 days. Say this once when scheduling starts. It costs little, because the
 loop's state lives in the repo — a fresh session only needs `/solodev:loop` again to
@@ -135,7 +140,7 @@ This is the only sanctioned way to break cadence.
 
 Audits run as **separate subagents**, never inline. An audit performed by the agent
 that wrote the code grades its own homework, and the protocol forbids approving in
-the pass that authored the change. Three of the four cannot edit files at all, so a
+the pass that authored the change. Four of the five cannot edit files at all, so a
 finding can never be quietly fixed instead of reported.
 
 Spawn them with the `Agent` tool:
@@ -222,32 +227,18 @@ brand-new session continue without any prior conversation context.
 
 ---
 
-## Invariants (non-negotiable; no patch may remove or weaken them)
+## Invariants
 
-1. **One run = one COMPLETE slice, then stop.** Too big → take the smallest vertical
-   slice that is still complete. Never leave work half-done.
-2. **No new placeholders, stubs, or `TODO`s.** Those are blockers, not progress.
-3. **Evidence before assertion.** "Done" is only valid after it was executed and the
-   result was seen. Steps that failed or were skipped are stated plainly, with their
-   output.
-4. **The Definition of Done is written BEFORE the code**, specific to this iteration,
-   and ticked off item by item before the run counts as finished.
-5. **README.md, CHANGELOG.md, and `docs/` are updated every run** — created if
-   missing. A run that skips documentation counts as failed.
-6. **Refactors and features never share a commit.** A refactor is
-   behaviour-preserving, proven by identically-named tests staying green.
-7. **Never guess an API.** Read the source, or read `specs/REFERENCE.md`.
-8. **Every run must produce one improvement to the loop itself** — a recorded lesson
-   or a protocol patch.
-9. **Every run must close with a plan for the next iteration**, written into
-   `specs/LOOP_STATE.md` (not merely spoken in chat) and repeated in the report.
-10. **Engineering practices in §11 of the protocol are binding**, not advisory. A bug
-    fix starts with a test that fails, lands at the root cause, and is reviewed in a
-    pass separate from the one that wrote it.
-11. **Anything found but deliberately not fixed goes to the backlog with its
-    origin** — never silently dropped, never opportunistically fixed inside an
-    unrelated slice.
-12. **A failed run does not reschedule.** Report and stop.
+The eleven invariants live in **§1 of the protocol** — `references/PROTOCOL.md` before
+bootstrap, `specs/LOOP.md` afterwards. They are not repeated here: two copies of a
+rule drift, and the repo's copy is the one a run actually reads. No patch may remove
+or weaken them.
+
+One invariant belongs to this skill rather than to the protocol, because scheduling
+lives here:
+
+- **A failed run does not reschedule.** Report and stop. A broken run repeating on a
+  timer only multiplies the mess.
 
 ---
 

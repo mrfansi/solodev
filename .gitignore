@@ -1,0 +1,4 @@
+# Runtime state only. specs/ and docs/ are the loop's deliverable and MUST stay
+# tracked — see protocol §2 and §6. Ignoring them empties every bootstrap commit
+# without erroring. Caught by run #1 QA.
+.omc/

@@ -1,0 +1,36 @@
+S1 FIXES — run #1, verified 2026-08-04
+
+B-1  .gitignore listed specs/ and docs/, silently emptying every bootstrap commit.
+     Found by: solodev:qa-runner, Phase 4.
+
+--- before (git show HEAD:.gitignore had only .omc/; the run's working copy had grown two lines) ---
+.omc/
+specs/
+docs/
+
+--- after ---
+# Runtime state only. specs/ and docs/ are the loop's deliverable and MUST stay
+# tracked — see protocol §2 and §6. Ignoring them empties every bootstrap commit
+# without erroring. Caught by run #1 QA.
+.omc/
+
+--- proof: paths are now stageable ---
+  12 paths git would stage (was: hard error, exit 1)
+
+B-2  README install command named a repo that does not exist.
+     Found by: solodev:qa-runner, Phase 4. Root-cause grep of 'claude-solodev'
+     across *.md/*.json/*.py returned 2 hits; only README.md:93 was an
+     instruction. README.md:98 is a local-clone path placeholder and is correct.
+
+--- before --- 
+  /plugin marketplace add mrfansi/claude-solodev
+  => GraphQL: Could not resolve to a Repository with the name 'mrfansi/claude-solodev'. (repository)
+
+--- after ---
+  93:/plugin marketplace add mrfansi/solodev
+  => resolves to: mrfansi/solodev (PUBLIC)
+
+--- gate after both fixes ---
+  skills: 10  agents: 5 (4 without edit tools)
+  OK
+  exit=0

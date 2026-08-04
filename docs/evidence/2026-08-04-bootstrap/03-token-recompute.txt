@@ -1,0 +1,15 @@
+=== EVIDENCE 03: independent recomputation of docs/evidence/2026-08-04-bootstrap/01-token-baseline.txt claims ===
+
+wc -c specs/LOOP.md            = 24603 bytes  (claimed: 24603 B) -> MATCH
+wc -c skills/loop/SKILL.md     = 11679 bytes  (claimed: 11679 B) -> MATCH
+A. per-run overhead total       = 36282 B ~ 9070 tok (claimed ~9071 tok)
+
+B. hot core §0-4 (measured from real section boundaries) = 14694 B ~ 3673.5 tok  (claimed ~3677 tok)
+   cold refs §5-12                                       = 9724 B ~ 2431.0 tok  (claimed ~2410 tok)
+   cold as % of (hot+cold)                                = 39.8%  (claimed '40% cut')
+
+Verdict: total file size, per-run overhead, hot/cold split, and the 40% figure
+all reproduce within rounding (<1%). The evidence file's own per-section byte
+figures are each off by a few bytes from a strict header-to-header measurement
+(e.g. it lists §3 as 9223 B, this script measures 9344 B) but the aggregate
+hot/cold totals and the headline 40% claim hold up.
