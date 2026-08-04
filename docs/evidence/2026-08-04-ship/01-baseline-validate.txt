@@ -1,0 +1,2 @@
+skills: 12  agents: 5 (4 without edit tools)
+OK

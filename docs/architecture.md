@@ -114,10 +114,25 @@ They share one rulebook: `task` owns the type table, the id sequence, bug severi
 the scoring formula, and the row format. `discover` points at those rules rather than
 carrying a second copy, for the same reason the invariants live only in protocol §1.
 
-## What is deliberately missing
+## Where the boundary sits
 
-Nothing **ships**. The loop takes a slice from backlog to draft PR — verified,
-audited, reviewed — and stops there. Promoting the PR, merging, tagging, and releasing
-are all the user's, and no skill covers them. That is a deliberate boundary rather
-than an oversight: releasing is the step where a mistake reaches other people, and the
-plugin is built to hand that decision over rather than take it.
+`ship` moved it, but did not remove it. The plugin now takes work all the way from an
+unfiled idea to a cut release: `discover` finds it, `task` files it, `loop` builds and
+verifies it, the audit tier judges it, `pr-new` proposes it, `ship` versions it.
+
+**Two steps remain deliberately outside**: tagging and pushing. Those are where a
+mistake reaches other people and stops being recallable. `ship` prepares everything, then
+prints the exact commands and stops — the person accountable for a public release
+should be the one who types it. `pr-new` draws the same line by opening PRs as drafts.
+
+This is the plugin's one consistent rule about power: **it will do any amount of work,
+and it will not take an irreversible outward-facing action on your behalf.** Run #1
+found the README's install command broken and could not fix it, because fixing it meant
+publishing the repo. It stayed an open S1 for two runs until the user authorised it.
+That is the boundary working, not the loop failing.
+
+What is still missing: nothing *notices* when a release is due. Protocol §3 Phase 8
+step 3 already requires one — "user-visible change → bump SemVer and move
+`[Unreleased]` into a version section" — but no gate enforces it, which is exactly how
+three runs shipped user-visible changes while the version sat at `0.1.0`. `ship` gives
+that rule a keeper; nothing yet reminds a run to call it.

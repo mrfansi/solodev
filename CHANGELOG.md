@@ -7,8 +7,26 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-08-04
+
 ### Added
 
+- **`/solodev:ship` — the teammate who cuts a release.** Derives the SemVer bump from
+  what `[Unreleased]` actually contains, moves the version everywhere it lives, cuts
+  the changelog into a dated section with the right link references, and commits the
+  bump alone. It **stops before tagging and pushing** and prints those commands
+  instead — the two irreversible steps stay the user's.
+- **`/solodev:be` and `/solodev:fe` — the implementation tiers.** Back-end engineering
+  (boundaries, API and data design, transactions) and front-end engineering
+  (architecture, state, runtime cost, code-level accessibility). The loop loads them
+  inline in Phase 3; each also works standalone.
+- **`/solodev:task` — files work into the backlog without starting a run.** Classifies,
+  scores, and queues a feature, bug, enhancement, refactor, or chore, and says where it
+  landed and when the cadence will reach it.
+- **`/solodev:bug-hunter` — the security audit.** Thinks like an attacker against your
+  own code: injection, broken access control, auth flaws, secrets exposure, SSRF, and
+  logic-level abuse. Ships as a subagent too, spawned in Phase 4 when a slice touches a
+  trust boundary.
 - **`/solodev:discover` — the teammate who decides what to build.** Every other skill
   acts on work someone already decided on; this one finds work the repo proves is
   needed but nobody filed. It works six seams — abandoned `TODO`/`FIXME` markers,
@@ -78,4 +96,5 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Protocol §3 Phase 1 states what happens when the audit cadence and the meta-review
   cadence land on the same run: they stack, neither cancels the other.
 
-[Unreleased]: https://github.com/mrfansi/solodev/compare/HEAD...HEAD
+[Unreleased]: https://github.com/mrfansi/solodev/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/mrfansi/solodev/releases/tag/v0.2.0

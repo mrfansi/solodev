@@ -90,6 +90,41 @@ subagent type for `context: fork` but do not state what `context: fork` defaults
 when `agent` is omitted; the worked example passes `agent: Explore` explicitly. Run #2
 declined to use `context: fork` for that reason — see backlog `E-3`.
 
+## Claude Code — plugin version management
+
+**Read from:** <https://code.claude.com/docs/en/plugins-reference> §Version management
+and the plugin-manifest schema table, 2026-08-04. Quoted, not inferred.
+
+> `version` — Optional. Semantic version. Setting this **pins the plugin to that
+> version string, so users only receive updates when you bump it.** If omitted, Claude
+> Code falls back to the git commit SHA, so every commit is treated as a new version.
+> **If also set in the marketplace entry, `plugin.json` wins.**
+
+> If you set `version` in `plugin.json`, you must bump it every time you want users to
+> receive changes. **Pushing new commits alone is not enough**, because Claude Code
+> sees the same version string and keeps the cached copy.
+
+> Users get updates only when you bump this field. Pushing new commits without bumping
+> it has no effect, and **`/plugin update` reports "already at the latest version"**.
+
+The version is the **cache key** that decides whether an update exists. Consequences
+this repo hit directly (backlog `B-4`):
+
+- A plugin pinned at a version nobody bumps is **frozen for every installed user**, no
+  matter how many commits ship. The failure is silent: `/plugin update` reports
+  success.
+- `plugin.json` winning over the marketplace entry means a stale marketplace version
+  does **not** break installs — it misleads readers. `scripts/validate.py` fails on
+  drift anyway, because two version strings that disagree are a bug waiting for the
+  moment someone trusts the wrong one.
+- The alternative is to omit `version` entirely and let the commit SHA drive updates.
+  Suited to fast iteration; unsuited to a plugin with a changelog and release notes,
+  which is why this repo keeps an explicit version and `/solodev:ship` exists to move
+  it.
+
+Each installed version is a separate cache directory; superseded ones are removed 14
+days later, so concurrent sessions holding the old copy keep working.
+
 ## Claude Code — subagent frontmatter, full key list
 
 **Read from:** <https://code.claude.com/docs/en/sub-agents> on 2026-08-04.

@@ -61,8 +61,46 @@ else:
     if entry.get("version") != plugin.get("version"):
         err(
             f"version drift: plugin.json {plugin.get('version')!r} vs "
-            f"marketplace.json {entry.get('version')!r}"
+            f"marketplace.json {entry.get('version')!r}. plugin.json wins at runtime, "
+            f"so this misleads readers rather than breaking installs — but a release "
+            f"that moved one file and not the other is a half-cut release"
         )
+    # The version is the cache key Claude Code uses to decide whether an update
+    # exists. A version that never moves means installed users never receive
+    # anything, silently — /plugin update reports success. So it must at least be
+    # well-formed SemVer, and the CHANGELOG must have a matching section.
+    ver = plugin.get("version", "")
+    if not re.fullmatch(r"\d+\.\d+\.\d+", ver):
+        err(f"plugin.json version {ver!r} is not MAJOR.MINOR.PATCH")
+    elif ver != "0.1.0":  # 0.1.0 predates this repo's changelog convention
+        cl_path = ROOT / "CHANGELOG.md"
+        if not cl_path.exists():
+            err(f"version {ver} is set but CHANGELOG.md does not exist")
+        else:
+            changelog = cl_path.read_text()
+            # A bare substring test passes on a section that is empty, undated, or
+            # merely quoted in prose. All three shipped a green gate once; each of
+            # these three assertions kills one of them.
+            m = re.search(
+                rf"^## \[{re.escape(ver)}\][^\n]*$(.*?)(?=^## \[|\Z)",
+                changelog, re.M | re.S,
+            )
+            if not m:
+                err(
+                    f"version {ver} has no `## [{ver}]` section heading in "
+                    f"CHANGELOG.md. Bumping without cutting the changelog leaves "
+                    f"users no way to see what they received"
+                )
+            elif not re.search(r"^\s*[-*] ", m.group(1), re.M):
+                err(
+                    f"CHANGELOG.md's `## [{ver}]` section is empty. The version was "
+                    f"cut but the entries were left behind"
+                )
+            if not re.search(r"^## \[Unreleased\]", changelog, re.M):
+                err(
+                    "CHANGELOG.md has no `## [Unreleased]` section. Cutting a release "
+                    "must leave a fresh empty one for the next run to write into"
+                )
     if entry.get("description") != plugin.get("description"):
         warn("description differs between plugin.json and marketplace.json")
 
