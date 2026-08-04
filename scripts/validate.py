@@ -233,7 +233,7 @@ SEV_CANON = {
     "S2": "primary flow broken but a workaround exists",
     "S3": "cosmetic, or an edge case unlikely in practice",
 }
-for rel in ("skills/loop/references/PROTOCOL.md", "skills/task/SKILL.md", "skills/qa/SKILL.md"):
+for rel in ("skills/autopilot/references/PROTOCOL.md", "skills/task/SKILL.md", "skills/qa/SKILL.md"):
     text = (ROOT / rel).read_text().lower()
     for sev, phrase in SEV_CANON.items():
         if phrase not in text:
