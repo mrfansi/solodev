@@ -67,16 +67,21 @@ would remove ~2,410 once. `LOOP_STATE.md` is now the second-largest read and ove
 the protocol itself on trend. `R-3` is rescored to **20.0** on this and is the top
 actionable item.
 
-**Where the work physically is:** published as of the run #3 ruling. `main` and all
-three loop branches are on `github.com/mrfansi/solodev`, with a stacked draft PR per
-run: **#1** run-1 → main, **#3** run-2 → run-1, **#4** run-3 → run-2. Merge in that
-order. All three stay drafts; promoting and merging are the user's.
+**Where the work physically is — READ THIS BEFORE BRANCHING.** The four stacked PRs
+were all merged, but in an order that did not put the work on `main`. PR #1 merged
+`run-1` into `main` first; PRs #3, #4 and #5 then merged each newer branch into the one
+below it, so they landed on intermediate *branches*, never on `main`.
 
-`main` itself still contains no `specs/` — it is the pre-loop tree until PR #1 merges.
+Result: **`main` carries run #1 only** — protocol v1.1, ten skills, no `discover`, no
+`ship`. Everything through run #4 lives on `loop/run-3-skill-dedup` and
+`loop/run-4-ship`. Verify before trusting either:
 
-**Unrelated PR on the repo: #2**, opened by the `ecc-tools` GitHub App, not by this
-loop. It adds 741 lines of `.claude/`, `.codex/`, and `.agents/` config and is **not**
-a draft. The loop has not touched it and will not.
+```bash
+git ls-tree origin/main --name-only skills/ | wc -l   # 10 = stale, 12 = current
+```
+
+A PR from `loop/run-4-ship` into `main` closes the gap. Until it merges, branch from
+`loop/run-4-ship`, not from `main`.
 
 **Branch the next run from the newest branch above, not from `main`.** From `main` the
 loop skill sees no `specs/LOOP.md`, selects BOOTSTRAP, and overwrites this file from
@@ -128,6 +133,7 @@ The Notes column always carries the **origin**.
 | ~~C-5~~ | ~~The standing directive contradicts protocol §3 Phase 1 (`N % 3 == 0` → audit/refactor mandatory, **not** a new feature)~~ | 4 | 3 | 1 | 12.0 | **Ruled by the user after run #3: the directive wins.** Protocol patched to **v1.2** — a standing directive now outranks the cadence's *prohibition* on features but not its *choice of slice*, so a cadence run does the refactor **and** ships a feature. §1 untouched. Run #3's Run Log entry is the recorded failure §4D requires. Template synced |
 | ~~C-4~~ | ~~`scripts/validate.py` cannot catch the class of bug that nearly sank run #1. Add a `git check-ignore` check and scan `docs/architecture.md` for the agent-count claim~~ | 3 | 4 | 1 | 12.0 | **Done in run #3**, folded in per §10. Took three attempts to build a check that could actually fail — see the Run Log note. Covers `specs/`, `docs/`, and every directory beneath them |
 | C-1 | `README.md` and `docs/` were created before the loop existed and have never been checked against a live install. Walk the documented install path end to end once the remote has content | 2 | 2 | 1 | 4.0 | Blocked on `B-2`. Recorded so the id is not reused and the dependency is visible |
+| C-8 | Branch names led with the tool and the run number (`loop/run-4-ship`), saying nothing about the change. Adopt `<type>/<backlog-id>-<what-it-does>` | 3 | 5 | 1 | 15.0 | **Done.** From: user directive 2026-08-04. Protocol patched to v1.3 (§3 Phase 8); `scripts/validate.py` warns on a non-conforming branch. Existing merged branches are NOT renamed — renaming a merged branch rewrites nothing and breaks its PR link |
 | C-6 | `pr-review` is the one skill named in no `docs/flows/` file. Give it a flow doc, or state in `docs/README.md` why the review flow does not need one | 1 | 3 | 1 | 3.0 | **Found by discovery, run #2, seam 2.** Cite: `docs/evidence/2026-08-04-discover/03-seam-2-corrected.txt`, "skills with no flow doc mentioning them: pr-review". **Narrowed after run #2 review:** originally filed as "11 skills, 1 flow doc" against §6's "one file per major user flow". `pr-reviewer` rejected the framing — a skill is not a flow, and reading it as one would commission ten always-resident documents in a repo whose three top refactors all exist to cut per-run read cost. The one-skill gap is what the evidence actually supports |
 | C-7 | `skills/task/SKILL.md:88` writes a report score with the `×` and `÷` glyphs; `discover` writes the same score in ASCII. ASCII is the safer choice in a terminal, so `task` is the side that should move | 1 | 3 | 1 | 3.0 | Found during run #2 Phase 5 by `ui-auditor` (major 2). Deliberately **not** fixed in run #2: `task` is outside the slice, and §11G sends unrelated improvements to the backlog rather than into this commit |
 | ~~B-1~~ | ~~`.gitignore` listed `specs/` and `docs/`, so every bootstrap commit would have silently contained nothing but `.gitignore` and `CHANGELOG.md`~~ | — | — | — | — | **S1. Fixed in run #1.** Found by `qa-runner` in Phase 4. Origin: the two lines were absent at Phase 0 and present by Phase 4 — added mid-run by something outside this run's edits |

@@ -221,6 +221,24 @@ for path in (ROOT / "README.md", ROOT / "skills/loop/SKILL.md", ROOT / "docs/arc
                 f"but {len(no_edit)} of the {len(agents)} have no edit tools"
             )
 
+# Branch naming, per protocol §3 Phase 8: <type>/<backlog-id>-<what-it-does>.
+# A WARNING, not an error: the validator runs on main, on release branches, and in
+# repos that never adopted the loop, none of which should fail the gate for this.
+branch = subprocess.run(
+    ["git", "rev-parse", "--abbrev-ref", "HEAD"],
+    cwd=ROOT, capture_output=True, text=True,
+)
+name = branch.stdout.strip()
+TYPES = ("feat", "fix", "refactor", "chore", "docs", "perf", "test")
+if branch.returncode == 0 and name not in ("main", "master", "HEAD"):
+    if not re.fullmatch(rf"({'|'.join(TYPES)})/[a-z]-?\d+-[a-z0-9-]+|({'|'.join(TYPES)})/[a-z0-9-]+", name):
+        warn(
+            f"branch {name!r} does not match <type>/<backlog-id>-<what-it-does> "
+            f"(§3 Phase 8). Types: {', '.join(TYPES)}"
+        )
+    elif not re.match(rf"({'|'.join(TYPES)})/[a-z]-?\d+-", name):
+        warn(f"branch {name!r} has no backlog id — it cannot be traced to a row")
+
 # --- report ---------------------------------------------------------------
 
 print(f"skills: {len(skills)}  agents: {len(agents)} ({len(no_edit)} without edit tools)")
