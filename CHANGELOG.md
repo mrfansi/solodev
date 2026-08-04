@@ -19,6 +19,17 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   output this keeps out of your context is not yet measured against a real forked run,
   so no figure is claimed here.
 
+### Fixed
+
+- **`discover`'s seams could not see the loop's own workspace on a machine where
+  `grep` is wrapped.** Ripgrep and token-proxy wrappers honour `.gitignore`, and the
+  two directories the loop keeps its evidence in are gitignored by design — so seam 1
+  returned 4 hits where the real answer is 22, and seams 2 and 3 read trees that came
+  back empty. The skill now carries a probe that detects it before the sweep starts.
+  The probe has to recurse from `.` and list paths only: naming the ignored directory
+  directly returns the same result either way, and asking for line numbers prints
+  matched text containing the very filename you were told to look for.
+
 ### Internal
 
 - **The validator checks the three forking keys.** `context` must be `fork` if
