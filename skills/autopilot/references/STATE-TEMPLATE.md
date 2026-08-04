@@ -54,7 +54,7 @@ The Notes column always carries the **origin**: user report with its date, or
 
 **Run #N — <task title>**
 
-Score: `<n>` (Value `<n>` × Frequency `<n>` ÷ Size `<n>`).
+Score: `<n>` (V`<n>` x F`<n>` / S`<n>`).
 Cadence: run #N `<multiple of three? of five?>` → `<feature allowed / audit required>`.
 
 Binding `LOOP_LEARNINGS.md` rules for this task: `<list them>`.
@@ -76,7 +76,7 @@ Binding `LOOP_LEARNINGS.md` rules for this task: `<list them>`.
 
 ```
 Task        : <id + title>
-Score       : <n>  (Value <n> × Frequency <n> ÷ Size <n>)
+Score       : <n>  (V<n> x F<n> / S<n>)
 Why this    : <tie it to a gap, the Run Log, or a user request>
 Cadence     : run #<N+1> → <feature allowed / audit required / meta-review required>
 Prereqs     : <what must exist first, or "none">

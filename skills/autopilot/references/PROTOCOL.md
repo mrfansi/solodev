@@ -472,7 +472,7 @@ Written into `specs/LOOP_STATE.md` under the heading
 
 ```
 Task        : <id + title>
-Score       : <n>  (Value <n> × Frequency <n> ÷ Size <n>)
+Score       : <n>  (V<n> x F<n> / S<n>)
 Why this    : <tie it to a gap, the Run Log, or a user request>
 Cadence     : run #<N+1> → <feature allowed / audit required / meta-review required>
 Prereqs     : <what must exist first, or "none">

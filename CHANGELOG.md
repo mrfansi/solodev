@@ -7,6 +7,14 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Fixed
+
+- **Every skill prints a score the same way.** `task` and the two loop templates wrote
+  `(Value 5 × Frequency 3 ÷ Size 1)` while `discover` wrote `(V5 x F3 / S1)` for the
+  same number, so two teammates reporting the same backlog row disagreed on how it
+  looked. All four output templates now use the ASCII form, which is the safer one in
+  a terminal. The formula *definitions* keep `×` and `÷` — those are read, not printed.
+
 ## [0.3.0] - 2026-08-04
 
 ### Added
