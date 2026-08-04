@@ -72,7 +72,7 @@ first to touch code.
 - Pass format, lint, and test gates
 - Update `README.md`, `CHANGELOG.md`, and `docs/`
 - Get reviewed by a separate agent before committing
-- End in a draft PR on its own branch
+- End in a PR on its own branch — ready for review, never auto-merged
 
 ### It survives sessions
 

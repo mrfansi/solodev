@@ -109,8 +109,11 @@ Show the rendered title and body to the user first, then create:
 gh pr create --title "<title>" --body-file <file> --base "$BASE"
 ```
 
-- Add `--draft` when the work is not ready for review, when CI has not run yet, or
-  when this was invoked automatically by the loop skill.
+- **Open it ready, not draft.** A draft PR is for work that is genuinely unfinished:
+  CI has not run, a dependency is unmerged, you want early eyes on a direction. Add
+  `--draft` for those and say which one applies. Opening a PR is not an irreversible
+  act — merging is — so defaulting to draft buys no safety and costs the author a
+  click before anything can happen.
 - Add `--reviewer` only when the user names reviewers; do not guess who should review.
 - **Do not merge.** Opening a PR and merging it are separate decisions, and the
   second one is the user's.
@@ -128,7 +131,8 @@ lives in `specs/LOOP_STATE.md`, which is not committed.
 
 Runs unattended after a run commits, so:
 
-- Always `--draft`; the user promotes it when they are ready.
+- Ready by default, exactly as when invoked by hand. Draft only for the reasons in
+  step 5, and the report names the reason.
 - Title comes from the run's task and type; body's Summary comes from the run report.
 - "Evidence" links to `docs/evidence/<date>-<task>/` from that run.
 - "How to test" reuses the verification steps QA already executed, so the reviewer

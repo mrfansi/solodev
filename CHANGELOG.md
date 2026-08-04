@@ -9,6 +9,13 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
+- **Pull requests open ready for review instead of as drafts.** The rule said "always
+  draft" in five places while `pr-new` itself said draft was conditional; the "always"
+  won. Opening a PR is reversible and merging is not — merging was already the user's
+  decision, so the draft default bought no safety, notified nobody on a solo
+  repository, and cost a click before anything could happen. Draft is still there for
+  work that is genuinely unfinished, and the report now names the reason.
+
 - **The loop no longer contaminates the repository it runs in.** `specs/` and `docs/`
   are added to `.gitignore` at bootstrap and are never committed; the quality gate
   fails if either is tracked. `docs/evidence/` stores raw transcripts of whatever

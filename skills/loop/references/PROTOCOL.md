@@ -1,4 +1,4 @@
-# LOOP PROTOCOL · v1.4
+# LOOP PROTOCOL · v1.5
 
 > This file is **the protocol source of truth for this repository**. The loop may
 > patch it (§4D). Do not overwrite it from the skill template unless asked.
@@ -257,9 +257,11 @@ numbers are bookkeeping and stay in `specs/LOOP_STATE.md`.
    restatement of the diff.
 3. **Version** — user-visible change → bump SemVer and move `[Unreleased]` into a
    version section.
-4. **Open the PR** — delegate to the `pr-new` skill, which opens it as a **draft**.
-   Promoting it to ready, and merging, are the user's decisions. No remote or no `gh`
-   → skip this step, say so in the report, and carry on.
+4. **Open the PR** — delegate to the `pr-new` skill. It opens **ready**, because
+   opening a PR is reversible and merging is not; the boundary the loop must not cross
+   is the merge, and that stays the user's. Draft only when the work is genuinely
+   unfinished, and then say why. No remote or no `gh` → skip this step, say so in the
+   report, and carry on.
 
 Do not push or tag without permission if this repo has its own release rules; follow
 the repo's rules when they exist.
@@ -590,3 +592,9 @@ decide whether to finish the current slice first.
   where the workflow tooling *is* the product. Both from live use — the plugin was
   contaminating the repos it ran in. Three sections and no Run Log failure: guardrails
   2 and 4 bind the loop, not the user.
+- **v1.5** — §3 Phase 8: PRs open **ready**, not draft. The old rule said "always
+  draft" in five places while `pr-new` step 5 said draft was conditional, and the
+  "always" won. Opening a PR is reversible; merging is not, and merging was already
+  the user's. Draft cost a click before anything could happen and notified nobody on a
+  solo repo — and promoting four of them by hand is where the stacked merge order went
+  wrong.
