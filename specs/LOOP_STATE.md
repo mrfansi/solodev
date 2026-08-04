@@ -27,7 +27,7 @@ skill for real. Keep stdout transcripts under docs/evidence/.`
 
 ## Current state
 
-Plugin `solodev` v0.1.0. **Twelve skills**, five agents, one structure validator.
+Plugin `solodev` v0.2.0. **Twelve skills**, five agents, one structure validator.
 
 Run #1 installed the loop machinery — protocol, state, learnings, reference cache —
 and created the `CHANGELOG.md` and `docs/` that the protocol requires of every repo it

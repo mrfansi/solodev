@@ -7,6 +7,8 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-08-04
+
 ### Added
 
 - **`/solodev:ship` — the teammate who cuts a release.** Derives the SemVer bump from
@@ -94,4 +96,5 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Protocol §3 Phase 1 states what happens when the audit cadence and the meta-review
   cadence land on the same run: they stack, neither cancels the other.
 
-[Unreleased]: https://github.com/mrfansi/solodev/compare/HEAD...HEAD
+[Unreleased]: https://github.com/mrfansi/solodev/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/mrfansi/solodev/releases/tag/v0.2.0
