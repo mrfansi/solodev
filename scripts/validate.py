@@ -13,6 +13,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 DESC_MAX = 1024
 VALID_MODELS = {"opus", "sonnet", "haiku", "inherit"}
+BUILTIN_AGENTS = {"Explore", "Plan", "general-purpose"}
 
 errors: list[str] = []
 warnings: list[str] = []
@@ -108,6 +109,7 @@ else:
 
 skill_dirs = sorted(p for p in (ROOT / "skills").iterdir() if p.is_dir())
 skills = set()
+forked: dict[str, str] = {}  # skill -> the agent type it forks into, checked below
 for d in skill_dirs:
     md = d / "SKILL.md"
     if not md.exists():
@@ -122,6 +124,20 @@ for d in skill_dirs:
         err(f"skills/{d.name}/SKILL.md: no description")
     elif len(desc) > DESC_MAX:
         err(f"skills/{d.name}/SKILL.md: description is {len(desc)} chars, max {DESC_MAX}")
+
+    # forking keys. A typo here fails silently at runtime: the skill just keeps
+    # running inline, which is the exact behaviour `context: fork` was set to stop.
+    where = f"skills/{d.name}/SKILL.md"
+    context = fm.get("context")
+    if context is not None and context != "fork":
+        err(f"{where}: context is {context!r}; `fork` is the only documented value")
+    for key in ("agent", "background"):
+        if key in fm and context is None:
+            err(f"{where}: {key!r} only applies with `context: fork`, which is not set")
+    if fm.get("background") not in (None, "true", "false"):
+        err(f"{where}: background is {fm['background']!r}, must be `true` or `false`")
+    if context == "fork":
+        forked[d.name] = fm.get("agent", "general-purpose")
 
 # --- agents ---------------------------------------------------------------
 
@@ -138,6 +154,30 @@ for md in sorted((ROOT / "agents").glob("*.md")):
     model = fm.get("model")
     if model and model not in VALID_MODELS:
         err(f"agents/{md.name}: model {model!r} is not one of {sorted(VALID_MODELS)}")
+
+# a forked skill must name an agent type that exists — a missing one is a launch error
+no_edit = {n for n in agents if "Edit" in frontmatter(ROOT / "agents" / f"{n}.md").get("disallowedTools", "")}
+# `no_edit` is also the count README claims; keep it to repo agents. Explore and Plan
+# are read-only built-ins, so they belong in the fork check and nowhere else.
+cannot_write = no_edit | {"Explore", "Plan"}
+for skill, agent in sorted(forked.items()):
+    bare = agent.removeprefix("solodev:")
+    if agent not in BUILTIN_AGENTS and bare not in agents:
+        err(
+            f"skills/{skill}/SKILL.md: agent {agent!r} is not a built-in "
+            f"({', '.join(sorted(BUILTIN_AGENTS))}) and no agents/*.md defines it"
+        )
+        continue
+    if agent in cannot_write or bare in cannot_write:
+        warn(
+            f"skills/{skill}/SKILL.md forks into {agent!r}, which cannot edit files. "
+            "Correct for a read-only skill; wrong for one that writes its own output"
+        )
+    if bare in agents and agent == bare:
+        warn(
+            f"skills/{skill}/SKILL.md forks into {agent!r} unscoped. This plugin's "
+            f"agents register as `solodev:{bare}`; the bare name may not resolve"
+        )
 
 # --- cross-references -----------------------------------------------------
 
@@ -194,8 +234,7 @@ else:
             f"`git rm -r --cached specs docs`, and confirm .gitignore lists both"
         )
 
-# a claim about how many agents cannot edit must match the frontmatter
-no_edit = {n for n in agents if "Edit" in frontmatter(ROOT / "agents" / f"{n}.md").get("disallowedTools", "")}
+# a claim about how many agents cannot edit must match the frontmatter (`no_edit` above)
 for path in (ROOT / "README.md", ROOT / "skills/autopilot/SKILL.md", ROOT / "docs/architecture.md"):
     if not path.exists():
         continue

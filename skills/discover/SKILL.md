@@ -1,6 +1,9 @@
 ---
 name: discover
 description: Find work the repo already proves is needed but nobody filed — abandoned markers, doc promises no code keeps, findings never queued. Use when the backlog is thin, before planning, or when asking what to build next. Files what it finds; every item cites evidence.
+context: fork
+agent: general-purpose
+background: false
 ---
 
 # discover
@@ -62,6 +65,31 @@ cell must escape `|` as `\|`, and that escape does not survive being copied into
 shell: inside `grep -E`, `\|` is a *literal pipe*, so an alternation written in a table
 cell silently matches nothing. Run #2 shipped seam 1 that way and it returned 2 hits
 where the working command returns 25.
+
+**Check your `grep` before you trust any seam.** On many machines the `grep` on PATH
+is a wrapper — ripgrep, or a token-saving proxy — and those honour `.gitignore`. The
+loop's own `specs/` and `docs/` are gitignored by design, and they are exactly the
+trees seams 2 and 3 read, so a wrapped grep reports a clean sweep of the files that
+hold the evidence. This is the same hazard as the `ls` aliasing named below, and it is
+quieter. Prove it once per machine, **recursing from `.` exactly as the seams do**:
+
+```bash
+grep -rl 'Scored backlog' .    # must list specs/LOOP_STATE.md
+```
+
+If `specs/LOOP_STATE.md` exists but is missing from that list, the sweep cannot see
+the workspace: bypass the wrapper — `/usr/bin/grep`, `command grep`, or whatever
+no-ignore flag it takes — and run every seam through the bypass. Measured on this
+repo, seam 1 returned 4 hits wrapped against 22 unwrapped, with every file under
+`specs/` and `docs/` missing from the wrapped result. In a repo that never bootstrapped
+the loop there is no `specs/LOOP_STATE.md` to find, and its absence proves nothing.
+
+Two ways this probe has already been written wrong. **`-l`, never `-n`:** with line
+numbers the output carries matched *text*, and four of this repo's own hits contain
+the string `specs/LOOP_STATE.md` inside the line — a wrapped grep then shows you the
+filename you were told to look for while having reached no such file. **Do not name
+the ignored directory:** `grep -r '...' specs/` returns the same result either way,
+because the filtering applies to the recursive walk, not to a path you hand it.
 
 ```bash
 # seam 1 — abandoned markers. Substitute [area] for the final `.`
