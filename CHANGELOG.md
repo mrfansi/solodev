@@ -144,9 +144,9 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   ignored the quantifier ("each agent's" against the protocol's "its"). The
   grep-before-delete method needs both guards; see `docs/architecture.md`.
 - `.gitignore` now carries a comment stating that `specs/` and `docs/` must stay
-  tracked. Run #1 found both directories ignored in its working tree, which would
-  have produced a bootstrap commit containing none of the machinery it installed —
-  with no error. The bad lines were never committed, so this is a guard, not a fix.
+  tracked. They had been ignored in a working tree, which would have produced a
+  commit containing none of the machinery it claimed to install — with no error. The
+  bad lines were never committed, so this is a guard, not a fix.
 - The eleven invariants now live only in protocol §1. `skills/loop/SKILL.md` points
   at them instead of keeping a second copy that could drift.
 - Protocol §3 Phase 1 states what happens when the audit cadence and the meta-review
