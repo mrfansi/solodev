@@ -1,6 +1,6 @@
 ---
 name: pr-review
-description: Review a pull request and report findings ranked by severity. Use when asked to review a PR or whether it is safe to merge. Also invoked by the loop skill before committing. Optional PR link or number; with no argument it reviews the current branch's PR.
+description: Review a pull request and report findings ranked by severity, posting them to the PR as a comment when one exists. Use when asked to review a PR or whether it is safe to merge. Also invoked by the loop skill before committing. Optional PR link or number; with no argument it reviews the current branch's PR.
 ---
 
 # pr-review
@@ -86,12 +86,49 @@ Where a claim in the PR description is checkable, check it rather than trusting 
 - <name it — a review that only finds fault teaches nothing about what to repeat>
 ```
 
-The verdict is a **recommendation**. Do not run `gh pr review --approve` or merge;
-approving is the user's call, and an automated approval defeats the purpose of
-review.
+## Post it to the PR
 
-Posting the review as a PR comment requires the user to ask — it is outward-facing
-and visible to everyone on the repo.
+A verdict that lives only in a chat session dies with the session. **Post the report
+as a review event** so it sits on the PR where the next reader finds it:
+
+**Read the body before sending.** A COMMENTED review cannot be deleted once posted —
+only a PENDING one can, and dismissal covers APPROVED and CHANGES_REQUESTED only.
+
+**Nothing about the workflow goes in the body** — no run number, no phase, no backlog
+id. Write what you would write reviewing this change by hand. This is checked *before*
+sending, because after sending there is no check left.
+
+The verdict stays a **recommendation** wherever it is posted. Reviewing and approving
+are different decisions and the second one is the user's.
+
+```bash
+gh pr review <pr> --comment --body-file -    # the report on stdin, so no file is left behind
+```
+
+**There is not always a PR.** Invoked from the loop, this review runs at Phase 8 step 1
+— against the working diff, before the commit and before `pr-new` opens anything. There
+is no `<pr>` to name, and blockers get fixed before the PR exists at all. In that case
+post nothing and say so; the findings reach the run report instead.
+
+`--comment` is not a lesser choice — for a PR you opened yourself, it is the **only**
+state GitHub allows. Both others are rejected outright:
+
+```
+GraphQL: Can not approve your own pull request
+```
+
+`--request-changes` is refused the same way. That message is reported verbatim in
+public incident reports and is **not** reproduced here — reproducing it means posting a
+review nobody wanted — so expect the wording to differ slightly and the mutation path
+to be appended.
+
+So a solo developer will never see `approved` or `changes_requested` on their own PR,
+with or without this skill. Say that once when it comes up, rather than letting the
+absence read as a failure. On someone else's PR both states are available — use
+`--request-changes` when a blocker survives verification, and leave `--approve` to a
+human, because an automated approval defeats the purpose of the review.
+
+**Never merge**, on any PR.
 
 ## When the loop skill invokes this
 

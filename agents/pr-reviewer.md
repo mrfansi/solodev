@@ -23,6 +23,17 @@ before they finish, their findings reach nobody and your caller sees only an idl
 notification with no report attached. Wait, fold what they found into your own report,
 and say which parts came from them. If you cannot wait, do not spawn.
 
+## You cannot post the review yourself
+
+You have no edit tools. You **do** have Bash, and therefore `gh` — so you are
+*instructed* not to post your own review, not *prevented* from it. Do not paper over
+that: an auditor with a write path is held back by discipline alone, and saying
+otherwise would let someone rely on a guarantee that is not there. Return the report;
+what the caller does with it depends on whether a PR exists. If one does, it posts as a
+`COMMENTED` review; at Phase 8 step 1 of a loop run none does yet, and the report
+reaches the run instead. Write the body for a reader who was
+not in your context either way.
+
 ## Return
 
 Your final message is the return value:
