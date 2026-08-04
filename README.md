@@ -34,7 +34,7 @@ The audits ship as subagents too, so `loop` can run them in isolated contexts:
 
 | Agent | Edits files? | Role |
 |---|---|---|
-| `solodev:qa-runner` | yes — evidence only | Executes the test matrix against the real artifact |
+| `solodev:qa-runner` | yes | Executes the test matrix; needs edit access to write evidence and to temporarily revert a fix to prove a test catches it |
 | `solodev:bug-hunter` | **no** | Attacks trust boundaries, reports vulnerabilities with proof |
 | `solodev:pr-reviewer` | **no** | Reviews the diff, reports by severity, never approves |
 | `solodev:ux-auditor` | **no** | Judges whether the task can be completed |
@@ -70,7 +70,7 @@ first to touch code.
 - Verify on the real artifact and keep evidence
 - Pass a quality rubric (≥14/16, no item at 0)
 - Pass format, lint, and test gates
-- Update `README.md`, `CHANGELOG.md`, and `docs/`
+- Update `CHANGELOG.md` and `docs/` — and `README.md` when usage changed
 - Get reviewed by a separate agent before committing
 - End in a PR on its own branch — ready for review, never auto-merged
 

@@ -16,8 +16,6 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   an explicit instruction to wait and fold helper findings into its own report, or not
   to spawn at all, and the quality gate fails if any agent is missing it.
 
-### Fixed
-
 - **Pull requests open ready for review instead of as drafts.** The rule said "always
   draft" in five places while `pr-new` itself said draft was conditional; the "always"
   won. Opening a PR is reversible and merging is not — merging was already the user's
@@ -44,6 +42,25 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
+- **Protocol v1.6 — the ambiguity and token pass.** Invariant 5 no longer forces a
+  README edit on every run: CHANGELOG and `docs/` move every run, README moves when
+  the run changed how the product is used (§6's test already said so; the invariant
+  contradicted it). The subagent prompt rules — what every prompt carries, the
+  wait-for-helpers rule, what runs inline, the fallback when an agent type is missing
+  — moved from `skills/loop/SKILL.md` into protocol §3, so one file owns them and the
+  skill no longer argues with the protocol. Phase 6 now actually enforces §2's claim
+  that a tracked `specs/` or `docs/` fails the gate. §4C prunes `LOOP_STATE.md` (Run
+  Log caps at 20 lines, finished tasks collapse to their log line) so the file the
+  loop reads every run stops growing without bound. §8 owns the guarantee that a
+  cadence-deferred feature becomes the next run's default task.
+- **Agent files no longer restate their skill's rules.** Each agent loads its skill
+  and now states the precedence explicitly: the skill owns the method and severity
+  scale, the agent owns the return shape. One copy of each rule, and roughly a third
+  less text loaded on every agent invocation.
+- **Every skill and agent description was cut to its triggers.** Descriptions load
+  into every session whether or not the skill runs; the justification prose they
+  carried belongs in the skill body, which loads only on use.
+
 - **Branch naming follows `<type>/<backlog-id>-<what-it-does>`** instead of
   `loop/run-<N>-<slug>`. The type matches the Conventional Commit the run will write,
   so branch and commit cannot disagree; the backlog id makes the branch traceable
@@ -51,6 +68,24 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   which run made it. Protocol v1.3. `scripts/validate.py` warns on a branch that does
   not conform — a warning, not an error, so it never fails the gate on `main` or in a
   repo that has not adopted the loop.
+
+### Fixed
+
+- **`/solodev:discover` seam 2 only worked inside this plugin's own repository.** Its
+  commands grepped `skills/*/` and `agents/*.md`, which exist nowhere else, while the
+  skill claims to sweep any repo. The seam now states the generic shape — compare what
+  the docs name against what the code ships — with the layout-specific halves marked
+  for substitution.
+- **README claimed `qa-runner` edits "evidence only".** Nothing enforces that; the
+  agent keeps full edit access because QA must write evidence and temporarily revert
+  a fix to prove a test catches it. The table now says so.
+- **`CHANGELOG.md` had two `### Fixed` headings under `[Unreleased]`.** Merged.
+
+### Internal
+
+- `scripts/validate.py` now fails if the S1/S2/S3 severity definitions in the
+  protocol, `task`, and `qa` drift apart — they are duplicated by design so each
+  skill works standalone, and the check is what keeps the copies identical.
 
 ## [0.2.0] - 2026-08-04
 

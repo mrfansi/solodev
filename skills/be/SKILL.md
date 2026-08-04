@@ -1,6 +1,6 @@
 ---
 name: be
-description: Build back-end features as a back-end engineer — module boundaries, layering, API design, data modelling, transactions, error handling, observability, and performance. Use when implementing or refactoring server-side code, designing an API or schema, deciding where logic belongs, or when a service has grown tangled. Favours the simplest architecture that holds.
+description: Build back-end features as a back-end engineer — module boundaries, API design, data modelling, transactions, error handling, performance. Use when implementing or refactoring server-side code, designing an API or schema, or deciding where logic belongs.
 ---
 
 # be

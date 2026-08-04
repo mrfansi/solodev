@@ -2,6 +2,7 @@
 
 > Written by the loop every run. Source of truth for the backlog, the current task,
 > metrics, and the next-iteration plan. Protocol: `specs/LOOP.md`.
+> Pruned per §4C — Run Log caps at 20 lines; this file must not grow without bound.
 
 ## Detected stack
 

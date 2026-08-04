@@ -1,6 +1,6 @@
 ---
 name: pr-review
-description: Review a pull request and report findings ranked by severity. Use when the user asks to review a PR, check a PR, or asks whether a PR is safe to merge. Also invoked by the loop skill before committing. Takes an optional PR link or number; with no argument it reviews the PR for the current branch.
+description: Review a pull request and report findings ranked by severity. Use when asked to review a PR or whether it is safe to merge. Also invoked by the loop skill before committing. Optional PR link or number; with no argument it reviews the current branch's PR.
 ---
 
 # pr-review

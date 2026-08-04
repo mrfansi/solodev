@@ -1,6 +1,6 @@
 ---
 name: fe
-description: Build front-end features as a front-end engineer — component architecture, state, data fetching, runtime performance, semantic accessibility, forms, and the loading/empty/error states nobody builds. Use when implementing or refactoring UI code, choosing between a platform feature and a dependency, or when a component has grown unmanageable. For visual craft — typography, palette, motion, visual identity — delegate to the impeccable skill instead.
+description: Build front-end features as a front-end engineer — component architecture, state, data fetching, runtime performance, semantic accessibility, and the loading/empty/error states. Use when implementing or refactoring UI code. Visual craft (typography, palette, motion) belongs to the impeccable skill instead.
 ---
 
 # fe

@@ -1,6 +1,6 @@
 ---
 name: loop
-description: Run ONE iteration of a development loop whose state lives in the repo, so it survives across sessions, and schedule the next iteration itself. Use when the user invokes /solodev:loop, asks to start or resume iterative development, or wants continuous measured iterations with a definition of done, mandatory documentation, persistent memory, and a self-improving protocol. Accepts an optional interval and an optional plan or request.
+description: Run ONE iteration of a development loop whose state lives in the repo, then schedule the next iteration itself. Use when the user invokes /solodev:loop or asks to start, resume, or stop iterative development. Accepts an optional interval and an optional plan or request.
 ---
 
 # loop
@@ -131,13 +131,8 @@ Record the detected commands in `specs/LOOP_STATE.md` so later runs skip detecti
 Classified and scored per **protocol §10** before selection, then filed with a
 type-prefixed id and its origin. It does not jump the queue for being the most recent
 thing said. When it competes with the cadence, **§3 Phase 1** decides; an S1 bug is
-the only sanctioned override, per **§10**.
-
-One rule here lives only in this file: **a feature deferred by the audit/refactor
-cadence becomes the next run's first candidate, and the report says so.** §8 binds the
-next run to whatever plan the current run *chooses* to write, which is a weaker
-promise — it does not guarantee the deferred item is what gets written down. Without
-this, work can be pushed aside by cadence and quietly never come back.
+the only sanctioned override, per **§10**. A feature the cadence defers comes back
+via **§8** — it becomes the next run's default task.
 
 ---
 
@@ -150,35 +145,10 @@ all **protocol §3 Phase 8**.
 
 ## Companion agents
 
-**Protocol §3 says which agent runs at which phase, on what condition, and what its
-findings oblige.** Phases 4, 5, and 8 each name their own; that table is not repeated
-here.
-
-Four things about them live only in this file, because the protocol does not cover
-them:
-
-- **Every agent's prompt must carry** the slice under test, how to run the artifact,
-  the tightest condition to test first, and where to write evidence. §3 Phase 4 says
-  this of `qa-runner` alone — "**Its** prompt must carry…" — and Phases 5 and 8 impose
-  no prompt requirement at all. An auditor left to guess what it is auditing produces
-  findings about the wrong thing, and that applies to all five.
-
-- **Every agent's prompt must also forbid returning before its own helpers do.** The
-  auditors are denied `Write`/`Edit` but not `Agent`, so they can spawn helpers — and a
-  helper reports to the agent that spawned it, not to you. If that agent returns first,
-  the helper's findings reach nobody; you get an idle notification and no report. Say
-  it explicitly: *if you spawn subagents, wait for them and fold their findings into
-  your report; if you cannot wait, do not spawn.* This happened five times in one
-  session before anyone noticed, and each time the phase had to be redone inline.
-
-- **`task` loads inline**, alongside `fe` and `be`. §3 Phase 3 names only the two
-  implementation tiers, but filing is the run's own work too, with nothing to isolate.
-- **`pr-new` runs inline, not as a subagent.** §3 Phase 8 delegates to it without
-  saying where it runs. It acts rather than judges, so there is nothing to isolate.
-- **If a subagent returns nothing usable, or its type is unavailable because the
-  plugin is only partially installed, say so in the report and run that phase
-  inline.** Degraded but honest beats a phase silently skipped. The protocol assumes
-  a complete install; this is what to do when that assumption fails.
+**Protocol §3 owns all of it**: which agent runs at which phase and on what
+condition, what every subagent prompt must carry, the wait-for-helpers rule, what
+runs inline, and the fallback when a subagent type is unavailable or returns
+nothing usable. Nothing about the agents is repeated here.
 
 ---
 

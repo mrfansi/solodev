@@ -1,6 +1,6 @@
 ---
 name: ship
-description: Cut a release — work out the SemVer bump from what actually changed, move CHANGELOG [Unreleased] into a dated version section, and keep every version field in step. Use before publishing, when asked to release or bump a version, or when users are not receiving updates. Prepares everything and stops before tagging or pushing; those stay yours.
+description: Cut a release — derive the SemVer bump from the changelog, move [Unreleased] into a dated version section, keep every version field in step. Use when asked to release or bump a version, or when users are not receiving updates. Stops before tagging and pushing; those stay yours.
 ---
 
 # ship

@@ -1,6 +1,6 @@
 ---
 name: pr-new
-description: Open a pull request whose title and body follow GitHub best practice. Use when the user asks to create, open, or raise a PR, or when a finished slice of work is ready for review. Also invoked by the loop skill after a run commits. Takes an optional title argument; everything else is derived from the branch.
+description: Open a pull request whose title and body follow GitHub best practice. Use when asked to create or open a PR, or when a finished slice is ready for review. Also invoked by the loop skill after a run commits. Optional title argument; the rest derives from the branch.
 ---
 
 # pr-new

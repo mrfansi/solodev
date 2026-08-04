@@ -1,6 +1,6 @@
 ---
 name: ui
-description: Audit user interface presentation — visual hierarchy, typography, spacing, colour and contrast, component states, responsiveness, and consistency. Use when the user asks for a UI audit, visual review, design review, accessibility contrast check, or says an interface looks off, cluttered, or inconsistent. Also invoked by the loop skill when a run touches a visual surface. Covers web, mobile, and terminal interfaces.
+description: Audit interface presentation — visual hierarchy, typography, spacing, colour and contrast, component states, responsiveness, consistency — on web, mobile, or terminal interfaces. Use for a UI audit, visual review, or contrast check, or when an interface looks off. Also invoked by the loop skill when a run touches a visual surface.
 ---
 
 # ui

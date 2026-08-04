@@ -225,6 +225,20 @@ if missing:
         f"entirely — the caller gets an idle notification and no report"
     )
 
+# Severity definitions are duplicated by design — standalone skills must be
+# self-contained in a repo that never bootstrapped the loop. This check is what
+# stops the copies drifting into different meanings.
+SEV_CANON = {
+    "S1": "data loss, security hole, or a primary flow that cannot be completed",
+    "S2": "primary flow broken but a workaround exists",
+    "S3": "cosmetic, or an edge case unlikely in practice",
+}
+for rel in ("skills/loop/references/PROTOCOL.md", "skills/task/SKILL.md", "skills/qa/SKILL.md"):
+    text = (ROOT / rel).read_text().lower()
+    for sev, phrase in SEV_CANON.items():
+        if phrase not in text:
+            err(f"{rel}: {sev} definition drifted from the canonical phrase {phrase!r}")
+
 # Branch naming, per protocol §3 Phase 8: <type>/<backlog-id>-<what-it-does>.
 # A WARNING, not an error: the validator runs on main, on release branches, and in
 # repos that never adopted the loop, none of which should fail the gate for this.

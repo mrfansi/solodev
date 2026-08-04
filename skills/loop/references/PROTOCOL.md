@@ -1,4 +1,4 @@
-# LOOP PROTOCOL · v1.5
+# LOOP PROTOCOL · v1.6
 
 > This file is **the protocol source of truth for this repository**. The loop may
 > patch it (§4D). Do not overwrite it from the skill template unless asked.
@@ -27,8 +27,8 @@ User satisfaction outranks feature completeness.
    result was seen. Failed or skipped steps are stated plainly, with their output.
 4. **The Definition of Done is written BEFORE the code** (Phase 1), specific to this
    iteration.
-5. **README.md, CHANGELOG.md, and `docs/` are updated every run.** No exceptions;
-   even a pure refactor touches all three (§6).
+5. **CHANGELOG.md and `docs/` are updated every run; README.md whenever the run
+   changed how the product is used** (§6). A pure refactor records itself in both.
 6. **Refactors and features never share a commit.** A refactor is
    behaviour-preserving, proven by identically-named tests staying green.
 7. **Never guess an API.** Read the source, or read `specs/REFERENCE.md`.
@@ -56,14 +56,9 @@ User satisfaction outranks feature completeness.
 | `docs/evidence/<date>-<task>/` | Phase 4 verification evidence | yes |
 
 **`specs/` and `docs/` are NEVER committed.** They are the loop's workspace, not the
-product. `.gitignore` must list both, and the quality gate fails if either is tracked.
-Two reasons, and the second is the fatal one:
-
-1. They are the *workflow's* bookkeeping. A repo's history should record what the
-   product became, not which run scored what.
-2. `docs/evidence/` stores raw transcripts of whatever commands a run happened to run.
-   That is an open-ended capture surface — an `env` dump, an API response, a `curl`
-   with an auth header — and a credential committed to git history is permanent.
+product. `.gitignore` must list both; Phase 6 fails if either is tracked. Bookkeeping
+does not belong in the product's history — and `docs/evidence/` captures raw command
+output, so a stray credential committed there would be permanent.
 
 The cost is real and is not hidden: **the loop does not survive a fresh clone.** A new
 checkout has no `specs/LOOP.md`, so `/solodev:loop` bootstraps from scratch and the
@@ -76,6 +71,15 @@ is **not** in the repo. Never duplicate the backlog or Run Log into it.
 ---
 
 ## §3 RUN PROTOCOL (in order, no skipping)
+
+**Subagent rules (Phases 4, 5, 8).** Every subagent prompt carries: the slice under
+test, how to run the artifact, the tightest condition to test first, and where to
+write evidence. Every prompt also forbids returning while helpers it spawned are
+still running — a helper reports to its spawner, so returning early loses those
+findings. A subagent that returns nothing usable, or whose type is not installed,
+→ run that phase inline and say so in the report. `fe`, `be`, `task`, and `pr-new`
+are never subagents: they run inline, because implementing and acting are the run's
+own work — only judgement is isolated.
 
 ### Phase 0 — Orientation & cross-session recovery (≤10% of the run budget)
 
@@ -161,7 +165,7 @@ first edit: the failing test comes before the fix, and the fix lands at the root
 cause rather than at the reported symptom.
 
 **Load the tier discipline for the code you are writing** — invoke the `Skill` tool
-inline (not as a subagent; implementation is this run's own work):
+inline:
 
 - Front-end code → `solodev:fe`. If the slice also needs visual direction, run
   `impeccable` for direction **first**, then build to it — `fe` owns structure, state,
@@ -175,8 +179,7 @@ inline (not as a subagent; implementation is this run's own work):
 **Delegate this phase with the `Agent` tool, `subagent_type: "solodev:qa-runner"`**,
 every run — including refactor runs, where the matrix narrows to regression and
 persistence. It builds the test matrix, executes it against the real artifact, and
-files reproducible bugs. Its prompt must carry the slice under test, how to run the
-artifact, the tightest condition to test first, and the evidence path.
+files reproducible bugs.
 
 **When the slice touched a trust boundary** — auth, input handling, data access, file
 upload, external requests — also spawn `subagent_type: "solodev:bug-hunter"` in the
@@ -233,12 +236,15 @@ Run the format, lint, and test commands recorded under "Detected stack" in
 `specs/LOOP_STATE.md`. All must be green. New logic (parsers, formatters,
 validation, calculations, business rules) requires tests.
 
+`git ls-files -- specs docs` must print nothing — a tracked workspace file fails
+this phase (§2). Untrack with `git rm -r --cached` and fix `.gitignore`.
+
 Record how many times a gate failed in the Run Log — that is a metric, not a shame.
 
 ### Phase 7 — Mandatory documentation
 
-See §6. A run that does not touch README, CHANGELOG, and `docs/` **counts as
-failed**, whatever the code achieved.
+See §6. A run that does not touch CHANGELOG and `docs/` **counts as failed**,
+whatever the code achieved. README follows §6's usage test.
 
 ### Phase 8 — Review, commit & PR
 
@@ -257,11 +263,9 @@ numbers are bookkeeping and stay in `specs/LOOP_STATE.md`.
    restatement of the diff.
 3. **Version** — user-visible change → bump SemVer and move `[Unreleased]` into a
    version section.
-4. **Open the PR** — delegate to the `pr-new` skill. It opens **ready**, because
-   opening a PR is reversible and merging is not; the boundary the loop must not cross
-   is the merge, and that stays the user's. Draft only when the work is genuinely
-   unfinished, and then say why. No remote or no `gh` → skip this step, say so in the
-   report, and carry on.
+4. **Open the PR** — the `pr-new` skill, inline. It opens **ready**; draft only when
+   the work is genuinely unfinished, and say why. Merging stays the user's. No remote
+   or no `gh` → skip this step, say so in the report, and carry on.
 
 Do not push or tag without permission if this repo has its own release rules; follow
 the repo's rules when they exist.
@@ -317,6 +321,10 @@ references used. Never copy state-file contents into it.
 - **Delete any rule now enforced by code, types, tests, or lint** — if the compiler
   guards it, the brain does not need to. Replace it with a pointer to the test.
 - `LOOP_LEARNINGS.md` caps at **150 lines**. Over the cap → cut the least-used rules.
+- `LOOP_STATE.md` is pruned the same way: the Run Log keeps its last **20** lines,
+  and a finished task's call-site inventory and DoD checklist are deleted once the
+  run is logged — the Run Log line is the record. Struck backlog rows stay (they are
+  the decision trail) but keep only id, title, and Notes.
 
 ### D. Meta-review (every 5 runs)
 Compute trends from the Run Log: is the rubric score rising? are iterations falling?
@@ -426,7 +434,7 @@ never quietly deleted.
       fix and the root cause was addressed (§11B)
 - [ ] Anything found but deliberately left undone was filed to the backlog with its
       origin (§10)
-- [ ] README.md, CHANGELOG.md, and `docs/` were updated (§6)
+- [ ] CHANGELOG.md and `docs/` were updated; README if usage changed (§6)
 - [ ] `LOOP_STATE.md` and `LOOP_LEARNINGS.md` were updated (§4)
 - [ ] Claude Code memory was updated, or declared to have nothing new
 - [ ] **The next-iteration plan is written in `LOOP_STATE.md`** (§8)
@@ -453,6 +461,9 @@ Risk        : <what could blow up the scope>
 This plan **binds the next run's Phase 1 as its default candidate**. Deviating is
 allowed as long as the reason is written down. This is what lets `/loop` in a fresh
 session start working immediately without asking the user anything.
+
+A feature the audit cadence deferred this run is the default `Task` here, and the
+report says so — cadence may delay work, never lose it.
 
 ---
 
@@ -499,7 +510,7 @@ Every item enters the backlog with a type-prefixed id, a score, and its origin.
 |---|---|---|
 | **S1** | Data loss, security hole, or a primary flow that cannot be completed at all | Taken immediately. **Overrides the audit/refactor cadence** and any inherited plan. Record the override in the Run Log. |
 | **S2** | Primary flow broken but a workaround exists | `+2` to score |
-| **S3** | Cosmetic or edge case | standard formula |
+| **S3** | Cosmetic, or an edge case unlikely in practice | standard formula |
 
 A production bug that destroys data does not wait for a refactor run. This is the
 only sanctioned way to break cadence, and it must be stated in the report.
@@ -579,22 +590,18 @@ decide whether to finish the current slice first.
 ## §12 PROTOCOL HISTORY
 
 - **v1.0** — initial protocol, bootstrapped from the `dev-loop` skill.
-- **v1.1** — §1 absorbed the three invariants that previously lived only in the skill
-  (loop improvement, §11 binding, findings filed with their origin), so they survive
-  bootstrap. §3 Phase 1 states what happens when both cadences land on the same run.
-- **v1.2** — §3 Phase 1: a standing user directive to ship a feature outranks the
-  cadence's *prohibition*, not its choice of slice. Run #3's Run Log records it
-  breaking that directive; the user ruled the directive wins (`C-5`). §1 untouched.
-- **v1.3** — §3 Phase 8: branches are `<type>/<backlog-id>-<what-it-does>`. User
-  directive; guardrail 4 governs what the loop may patch, not what the user may.
-- **v1.4** — §2: `specs/` and `docs/` are never committed; the gate fails if either is
-  tracked. §6: nothing about the loop reaches `README.md` or `CHANGELOG.md`, except
-  where the workflow tooling *is* the product. Both from live use — the plugin was
-  contaminating the repos it ran in. Three sections and no Run Log failure: guardrails
-  2 and 4 bind the loop, not the user.
-- **v1.5** — §3 Phase 8: PRs open **ready**, not draft. The old rule said "always
-  draft" in five places while `pr-new` step 5 said draft was conditional, and the
-  "always" won. Opening a PR is reversible; merging is not, and merging was already
-  the user's. Draft cost a click before anything could happen and notified nobody on a
-  solo repo — and promoting four of them by hand is where the stacked merge order went
-  wrong.
+- **v1.1** — §1 absorbed the three skill-only invariants; §3 Phase 1: stacked cadences.
+- **v1.2** — §3 Phase 1: a standing feature directive outranks the cadence's
+  *prohibition*, not its choice of slice (user ruling, `C-5`).
+- **v1.3** — §3 Phase 8: branches are `<type>/<backlog-id>-<what-it-does>` (user
+  directive).
+- **v1.4** — §2: `specs/` and `docs/` never committed; §6: nothing about the loop in
+  `README.md`/`CHANGELOG.md` unless the workflow tooling *is* the product. From live
+  use: the plugin was contaminating the repos it ran in.
+- **v1.5** — §3 Phase 8: PRs open **ready**, not draft. Opening is reversible,
+  merging is not, and merging was already the user's.
+- **v1.6** — ambiguity + token pass, by the user: invariant 5 scopes README to §6's
+  usage test; the subagent prompt rules moved from the skill into §3 and now cover
+  Phases 4/5/8 alike; Phase 6 enforces the §2 untracked-workspace rule; §4C prunes
+  `LOOP_STATE.md`; §8 owns the deferred-feature guarantee; §10 S3 wording aligned
+  with the `task` and `qa` skills.
