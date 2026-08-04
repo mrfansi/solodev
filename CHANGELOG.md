@@ -7,6 +7,16 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- **CI runs the validator.** `.github/workflows/validate.yml` executes
+  `python3 scripts/validate.py` on every push and pull request. It was the repo's
+  only executable gate and it fired only when someone remembered to type it. No
+  dependencies to install — the runner already has Python 3. Verified against a
+  clean detached-HEAD clone, which is what `actions/checkout` produces and the one
+  place a locally-green run could still fail: no `specs/`, no `docs/`, no branch
+  name, all three special-cased by the validator.
+
 ### Fixed
 
 - **The two contradictory S1 rules now scope themselves — protocol v1.9.** Phase 4

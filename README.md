@@ -113,6 +113,8 @@ Developing on it locally? Point the marketplace at the clone instead —
 `/plugin marketplace add /path/to/claude-solodev` — and run
 `python3 scripts/validate.py` before committing; it checks the manifests, every
 frontmatter block, and every cross-reference between skills, agents, and this README.
+GitHub Actions runs the same command on every push and pull request, so forgetting it
+locally costs you a red check rather than a silent regression.
 
 ## Design notes
 
