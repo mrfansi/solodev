@@ -1,4 +1,4 @@
-# LOOP PROTOCOL · v1.1
+# LOOP PROTOCOL · v1.2
 
 > This file is **the protocol source of truth for this repository**. The loop may
 > patch it (§4D). Do not overwrite it from the skill template unless asked.
@@ -102,11 +102,13 @@ and scored per §10 **before** selection, so a bug request competes on the same 
 as a feature instead of jumping the queue by being the most recent thing said.
 
 **Cadence:**
-- Run #N where `N % 3 == 0` → audit/refactor is mandatory, **not** a new feature.
+- Run #N where `N % 3 == 0` → the slice must be audit/refactor.
 - Run #N where `N % 5 == 0` → meta-review plus protocol patch is mandatory (§4D).
-- Both at once (#15, #30, …) → do both: the slice is audit/refactor **and** the run
-  produces a patch. They stack; neither cancels the other.
+- Both at once (#15, #30, …) → do both. They stack; neither cancels the other.
 - **An S1 bug (§10) overrides both**, and the override is recorded in the Run Log.
+- A **standing user directive** to ship a feature every run outranks the cadence's
+  prohibition but not its choice of slice: do the audit/refactor **and** the feature,
+  recording both. Without such a directive, a cadence run ships no feature.
 
 Take the highest score that **certainly fits** in one run. In doubt → split it.
 
@@ -545,3 +547,6 @@ decide whether to finish the current slice first.
 - **v1.1** — §1 absorbed the three invariants that previously lived only in the skill
   (loop improvement, §11 binding, findings filed with their origin), so they survive
   bootstrap. §3 Phase 1 states what happens when both cadences land on the same run.
+- **v1.2** — §3 Phase 1: a standing user directive to ship a feature outranks the
+  cadence's *prohibition*, not its choice of slice. Run #3's Run Log records it
+  breaking that directive; the user ruled the directive wins (`C-5`). §1 untouched.
