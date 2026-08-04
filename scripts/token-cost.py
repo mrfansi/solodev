@@ -5,6 +5,7 @@
     python3 scripts/token-cost.py --all      # every session, oldest first
     python3 scripts/token-cost.py <id>       # one session, full or 8-char prefix
     python3 scripts/token-cost.py --agents   # every subagent ever spawned, by type
+    python3 scripts/token-cost.py --mark     # "this run starts here", at its start
     python3 scripts/token-cost.py --selfcheck  # assert the accounting still holds
 
 Why this exists: for eight runs the loop reported the size of the files it reads at
@@ -115,6 +116,46 @@ def read(path: str) -> dict:
     }
 
 
+MARK = os.path.join(ROOT, "specs", ".cost-mark")
+
+
+def mark_write(s: dict, kid_weighted: int, nkids: int) -> bool:
+    """Record where a run starts, so its own cost can be told from the session's.
+
+    Several runs share one session, and a session's total is the sum of all of them.
+    Without a starting point there is no arithmetic that recovers one run's share —
+    the figure is simply the wrong quantity, however carefully it is computed.
+    """
+    try:
+        os.makedirs(os.path.dirname(MARK), exist_ok=True)
+        with open(MARK, "w", encoding="utf-8") as fh:
+            json.dump({"session": s["id"], "turns": len(s["curve"]),
+                       "weighted": weighted(s), "kids": kid_weighted,
+                       "nkids": nkids}, fh)
+    except OSError as e:
+        print(f"Could not write the mark at {MARK}: {e}", file=sys.stderr)
+        return False
+    return True
+
+
+def mark_read(session_id: str) -> "dict | None":   # quoted: 3.9 evaluates annotations
+    """The mark, or None — including when it belongs to a different session.
+
+    A mark from another session would subtract one transcript's total from another's,
+    which is not a smaller number, it is a meaningless one. Silence there would be the
+    worst outcome: a plausible figure with nothing behind it.
+    """
+    try:
+        with open(MARK, encoding="utf-8") as fh:
+            m = json.load(fh)
+    except (OSError, ValueError):
+        return None
+    if not isinstance(m, dict) or m.get("session") != session_id:
+        return None
+    keys = ("turns", "weighted", "kids", "nkids")
+    return m if all(isinstance(m.get(k), int) for k in keys) else None
+
+
 def weighted(s: dict) -> int:
     return int(s["fresh"] * W_INPUT + s["write"] * W_CACHE_WRITE
                + s["cached"] * W_CACHE_READ + s["output"] * W_OUTPUT)
@@ -206,12 +247,35 @@ def report(s: dict, verbose: bool) -> None:
     if s["orphans"]:
         print(f"  dropped           {s['orphans']:>13,} messages carried usage but no id "
               "and could not be deduplicated — excluded from every figure above")
-    print(f"\n  Run Log field:  cost {weighted(s) // 1000}k input-equiv "
-          f"(+{kid_weighted // 1000}k subagents) / {turns} turns / {len(kids)} subagents")
+    field = (f"cost {weighted(s) // 1000}k input-equiv "
+             f"(+{kid_weighted // 1000}k subagents) / {turns} turns / {len(kids)} subagents")
+    m = mark_read(s["id"])
+    if m is not None and (m["turns"] > turns or m["weighted"] > weighted(s)
+                          or m["kids"] > kid_weighted or m["nkids"] > len(kids)):
+        # Ahead of the session it claims to be inside: the transcript was replaced,
+        # or the file was edited. Subtracting would print a negative cost, which is
+        # not a smaller number but a false one — and a run would copy it out.
+        print("\n  The mark is ahead of this session — stale, or edited. Ignored.")
+        print("  Re-run `--mark` to set a fresh one.")
+        m = None
+    if m is None:
+        print(f"\n  Run Log field:  {field}")
+        print("    this is the SESSION, which may hold several runs. Set --mark at")
+        print("    the run's start and this line reports the run instead.")
+        return
+    print(f"\n  Run Log field:  cost {(weighted(s) - m['weighted']) // 1000}k input-equiv "
+          f"(+{(kid_weighted - m['kids']) // 1000}k subagents) / {turns - m['turns']} turns "
+          f"/ {len(kids) - m['nkids']} subagents")
+    # Deliberately NOT the same shape as the line above: a reader scanning for the
+    # figure to copy — or a `grep cost | tail -1` — must not be able to land on the
+    # session total by accident.
+    print(f"    this run, from the mark at turn {m['turns']}. Session so far: "
+          f"{weighted(s) // 1000}k over {turns} turns.")
 
 
 def selfcheck() -> int:
     """The smallest thing that fails if the accounting breaks. `--selfcheck`."""
+    import re
     import tempfile
     msg = lambda mid, out, blocks: json.dumps({"message": {
         "id": mid, "content": [{"type": "text"}] * blocks,
@@ -231,16 +295,147 @@ def selfcheck() -> int:
     assert s["cached"] == 2000, f"cached {s['cached']}, want 2000 — prompt counted once"
     assert s["orphans"] == 1, f"orphans {s['orphans']}, want 1 — no id, dropped, counted"
     assert weighted(s) == int(1 * 2 + 100 * 1.25 * 2 + 1000 * 0.1 * 2 + 507 * 5)
-    print("selfcheck OK — dedup, streamed output, orphan count, weights")
+
+    # The mark: a delta is only worth printing if it is arithmetic, not plumbing.
+    # The expected numbers below are computed here, by hand, from the fixture — not
+    # read back from the thing under test, which would assert only that it agrees
+    # with itself.
+    global MARK, TRANSCRIPTS
+    keep, keep_t = MARK, TRANSCRIPTS
+    try:
+        with tempfile.TemporaryDirectory() as d:
+            MARK = os.path.join(d, "specs", ".cost-mark")
+            # Two subagent transcripts on disk, so the printed line's subagent term is
+            # a real subtraction rather than 0 - 0. Without them a dropped subtraction
+            # there is invisible, which is how the first version of this check passed
+            # a mutant that removed it.
+            TRANSCRIPTS = os.path.join(d, "t")
+            kid_dir = os.path.join(TRANSCRIPTS, "S", "subagents")
+            os.makedirs(kid_dir)
+            for n in ("k1", "k2"):     # 1_000_000 output each, x5 -> ~5_000_000 apiece
+                with open(os.path.join(kid_dir, n + ".jsonl"), "w") as fh:
+                    fh.write(msg(n, 1_000_000, 1) + "\n")
+            # Figures are in the millions on purpose: the printed line divides by 1000,
+            # so a fixture in the hundreds floors every variant to "0k" and a dropped
+            # subtraction is invisible. That mistake was made here once.
+            early = {"id": "S", "curve": [1, 1, 1], "fresh": 1_000_000, "write": 0,
+                     "cached": 0, "output": 0}          # weighted 1_000_000, 3 turns
+            mark_write(early, 5_000_000, 1)
+            m = mark_read("S")
+            assert m is not None, "a mark just written must read back"
+            assert (m["turns"], m["weighted"], m["kids"], m["nkids"]) == (3, 1_000_000, 5_000_000, 1), m
+            assert mark_read("OTHER") is None, "a mark from another session must not count"
+
+            # The printed line is what a run copies out, so that is what gets asserted
+            # — an oracle over the intermediate values would have passed while the
+            # subtraction was missing from the line itself.
+            import contextlib, io
+            later = {"id": "S", "curve": [1] * 11, "fresh": 5_000_000, "write": 0,
+                     "cached": 0, "output": 0, "spawned": 0, "orphans": 0}
+            def printed(fixture):
+                buf = io.StringIO()
+                with contextlib.redirect_stdout(buf):
+                    report(fixture, verbose=False)
+                return buf.getvalue()
+
+            # A mark claiming more turns than the session has: stale or edited. The
+            # subtraction would print a negative cost, which a run would copy out.
+            # Each field guards independently, so each gets its own ahead-mark: a
+            # fixture ahead on turns alone lets a dropped guard on any other field
+            # ride along behind it.
+            for ahead in ({"turns": 99}, {"weighted": 9_000_000},
+                          {"kids": 99_000_000}, {"nkids": 9}):
+                mark_write({**early, "curve": [1] * 3}, 5_000_000, 1)
+                with open(MARK) as fh:
+                    good = json.load(fh)
+                with open(MARK, "w") as fh:
+                    json.dump({**good, **ahead}, fh)
+                out = printed(later)
+                assert "ahead of this session" in out, f"ahead on {ahead} must be refused, got:\n{out}"
+            field_line = out.split("Run Log field:")[1].split("\n")[0]
+            assert not re.search(r"-\d", field_line), \
+                f"no negative figure may reach the line, got: {field_line!r}"
+            mark_write({**early, "curve": [1] * 3}, 5_000_000, 1)   # 3 turns, 1 of 2 kids
+            out = printed(later)
+            assert "this run, from the mark at turn 3" in out, f"the delta must be labelled, got:\n{out}"
+            # by hand: 5_000_000 - 1_000_000 = 4_000_000 -> 4000k; 11-3 = 8 turns;
+            # 2 subagent transcripts on disk minus the 1 the mark recorded = 1.
+            # subagents on disk are ~10_000_452 weighted; the mark banked 5_000_000,
+            # so the run's share is ~5000k against the session's ~10000k.
+            assert "cost 4000k input-equiv (+5000k subagents)" in out, f"weighted deltas must reach the line, got:\n{out}"
+            assert "/ 8 turns / 1 subagents" in out, f"turns and subagent deltas must both reach the line, got:\n{out}"
+            assert "Session so far: 5000k over 11 turns" in out, f"session must sit beside it, got:\n{out}"
+            assert out.count("input-equiv (+") == 1, \
+                f"only the run's line may carry the copy-paste shape, got:\n{out}"
+
+            # E1: a mark EQUAL to the session is a real state — a run marked and then
+            # measured before doing anything. `>=` in the ahead-check would reject it.
+            mark_write({**later, "curve": [1] * 11}, 10_000_452, 2)
+            out = printed(later)
+            assert "this run, from the mark at turn 11" in out, \
+                f"a mark equal to the session is not ahead of it, got:\n{out}"
+            assert "/ 0 turns / 0 subagents" in out, f"an equal mark is a zero-cost run, got:\n{out}"
+
+            # E2: a delta that is not a round multiple of 1000, so floor and round
+            # disagree. 4_999_999 - 1_000_000 = 3_999_999 -> 3999k floored, 4000k rounded.
+            mark_write(early, 5_000_000, 1)
+            odd = {**later, "fresh": 4_999_999}
+            out = printed(odd)
+            assert "cost 3999k input-equiv" in out, f"the figure floors, never rounds, got:\n{out}"
+
+            # E4: two session ids sharing an 8-char prefix. This file treats a prefix as
+            # an identifier elsewhere (display, --mark lookup), so comparing on one here
+            # is a plausible mistake — and it would attribute another run's mark.
+            with open(MARK, "w") as fh:
+                json.dump({"session": "abcdef12-one", "turns": 1,
+                           "weighted": 1, "kids": 0, "nkids": 0}, fh)
+            assert mark_read("abcdef12-two") is None, \
+                "a shared id prefix is not the same session"
+
+            # E5: a session whose weight is dominated by cache and output rather than
+            # fresh input — the realistic case. Comparing the mark against `fresh`
+            # instead of `weighted()` would reject a perfectly good mark.
+            # session weighted = 500 + 4M*1.25 + 10M*0.1 + 1M*5 = 11_000_500, but
+            # `fresh` alone is 500. The mark below sits between the two on purpose:
+            # correct code accepts it, code comparing against `fresh` rejects it.
+            mixed = {"id": "S", "curve": [1] * 11, "fresh": 500, "write": 4_000_000,
+                     "cached": 10_000_000, "output": 1_000_000, "spawned": 0, "orphans": 0}
+            assert weighted(mixed) == 11_000_500, weighted(mixed)
+            mark_write({**mixed, "curve": [1] * 2, "fresh": 50_000, "write": 0,
+                        "cached": 0, "output": 0}, 0, 0)
+            out = printed(mixed)
+            assert "ahead of this session" not in out, \
+                f"a mark behind a cache-heavy session must be accepted, got:\n{out}"
+
+            # A partly-valid mark: one good int, one string. Distinguishes all() from
+            # any() in the key check — a fixture with no valid fields cannot.
+            with open(MARK, "w") as fh:
+                fh.write('{"session": "S", "turns": 3, "weighted": "ten", "kids": 0, "nkids": 0}')
+            assert mark_read("S") is None, "a partly-valid mark must not count"
+            os.remove(MARK)
+            assert mark_read("S") is None, "no mark is not an error"
+
+            MARK = os.path.join(d, "specs")      # a directory, not a file
+            with contextlib.redirect_stderr(io.StringIO()):
+                assert mark_write(early, 0, 0) is False, "unwritable must report, not crash"
+    finally:
+        MARK, TRANSCRIPTS = keep, keep_t
+
+    print("selfcheck OK — dedup, streamed output, orphan count, weights, mark delta")
     return 0
 
 
 def main() -> int:
-    flags = [a for a in sys.argv[1:] if a.startswith("--")]
+    flags = [a for a in sys.argv[1:] if a.startswith("-")]
     args = [a for a in sys.argv[1:] if not a.startswith("-")]
-    unknown = [f for f in flags if f not in ("--all", "--agents", "--selfcheck")]
+    unknown = [f for f in flags if f not in ("--all", "--agents", "--selfcheck", "--mark")]
     if unknown:
         print(f"Unknown flag: {' '.join(unknown)}", file=sys.stderr)
+        return 2
+    if "--mark" in flags and ("--all" in flags or args or "--agents" in flags
+                              or "--selfcheck" in flags):
+        print("--mark records where THIS run starts, in the newest session. It takes "
+              "no session argument and pairs with no other flag.", file=sys.stderr)
         return 2
     if "--selfcheck" in flags:
         return selfcheck()
@@ -265,6 +460,15 @@ def main() -> int:
             return 1
     elif not every:
         found = found[-1:]
+    if "--mark" in flags:
+        s = read(found[-1])
+        kids = subagents(s["id"])
+        if not mark_write(s, sum(weighted(k) for k in kids), len(kids)):
+            return 1
+        print(f"mark set at turn {len(s['curve'])} of session {s['id'][:8]} — "
+              "a later run of this script reports the delta since here as the run,\n"
+              "and the session total beside it.")
+        return 0
     detail = len(found) == 1 and not every
     for i, path in enumerate(found):
         if i:
