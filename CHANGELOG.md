@@ -9,6 +9,15 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
+- **An agent's findings could vanish if it spawned helpers of its own.** A helper
+  reports to the agent that spawned it, not to that agent's caller — so an agent
+  returning before its helpers finished left their findings reaching nobody, while the
+  caller saw only an idle notification with no report attached. Every agent now carries
+  an explicit instruction to wait and fold helper findings into its own report, or not
+  to spawn at all, and the quality gate fails if any agent is missing it.
+
+### Fixed
+
 - **Pull requests open ready for review instead of as drafts.** The rule said "always
   draft" in five places while `pr-new` itself said draft was conditional; the "always"
   won. Opening a PR is reversible and merging is not — merging was already the user's

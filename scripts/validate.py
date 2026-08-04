@@ -209,6 +209,22 @@ for path in (ROOT / "README.md", ROOT / "skills/loop/SKILL.md", ROOT / "docs/arc
                 f"but {len(no_edit)} of the {len(agents)} have no edit tools"
             )
 
+# Every agent may spawn subagents — none of them disallow `Agent`. A helper reports
+# to the agent that spawned it, so an agent returning early orphans its helpers'
+# findings. The rule has to live in each agent file because there is no shared
+# include; this check is what stops five copies drifting apart.
+SPAWN_RULE = "If you spawn helpers, wait for them"
+missing = sorted(
+    md.stem for md in (ROOT / "agents").glob("*.md")
+    if SPAWN_RULE not in md.read_text()
+)
+if missing:
+    err(
+        f"agents missing the spawn-and-wait rule: {', '.join(missing)}. A helper "
+        f"reports to its spawner, so an agent that returns early loses those findings "
+        f"entirely — the caller gets an idle notification and no report"
+    )
+
 # Branch naming, per protocol §3 Phase 8: <type>/<backlog-id>-<what-it-does>.
 # A WARNING, not an error: the validator runs on main, on release branches, and in
 # repos that never adopted the loop, none of which should fail the gate for this.

@@ -163,6 +163,14 @@ them:
   no prompt requirement at all. An auditor left to guess what it is auditing produces
   findings about the wrong thing, and that applies to all five.
 
+- **Every agent's prompt must also forbid returning before its own helpers do.** The
+  auditors are denied `Write`/`Edit` but not `Agent`, so they can spawn helpers — and a
+  helper reports to the agent that spawned it, not to you. If that agent returns first,
+  the helper's findings reach nobody; you get an idle notification and no report. Say
+  it explicitly: *if you spawn subagents, wait for them and fold their findings into
+  your report; if you cannot wait, do not spawn.* This happened five times in one
+  session before anyone noticed, and each time the phase had to be redone inline.
+
 - **`task` loads inline**, alongside `fe` and `be`. §3 Phase 3 names only the two
   implementation tiers, but filing is the run's own work too, with nothing to isolate.
 - **`pr-new` runs inline, not as a subagent.** §3 Phase 8 delegates to it without

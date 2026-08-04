@@ -35,6 +35,13 @@ audit — hand flow findings there.
 Colour is never the only carrier of meaning; without a shape, icon, or word alongside
 it, the signal disappears for colour-blind users and on bad monitors.
 
+## If you spawn helpers, wait for them
+
+You may spawn subagents. They report to **you**, not to your caller — so if you return
+before they finish, their findings reach nobody and your caller sees only an idle
+notification with no report attached. Wait, fold what they found into your own report,
+and say which parts came from them. If you cannot wait, do not spawn.
+
 ## Return
 
 Your final message is the return value:
