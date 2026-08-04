@@ -7,6 +7,16 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Fixed
+
+- **The two contradictory S1 rules now scope themselves — protocol v1.9.** Phase 4
+  said an S1 finding "is fixed in this run"; §10 said an S1 found mid-run means
+  "stop, report it, and let the user decide". Both are true, of different things, and
+  neither said which: an S1 **in** the slice under test is the run's own defect and
+  Phase 4 fixes it, while an S1 **outside** the slice stops the run and goes to the
+  user. Run #1 acted on the Phase 4 reading twice without noticing the other rule
+  existed; the ambiguity stood for five runs.
+
 ### Changed
 
 - **The loop's state file rolls off instead of growing forever — protocol v1.8.**

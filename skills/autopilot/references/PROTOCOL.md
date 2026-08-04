@@ -1,4 +1,4 @@
-# LOOP PROTOCOL · v1.8
+# LOOP PROTOCOL · v1.9
 
 > This file is **the protocol source of truth for this repository**. The loop may
 > patch it (§4D). Do not overwrite it from the skill template unless asked.
@@ -194,8 +194,12 @@ same message as `qa-runner`, so the two run concurrently. A pure internal refact
 with no boundary change skips it, and the report says so. Any Critical or High finding
 is an **S1**: it overrides the cadence and is fixed in this run, before the commit.
 
-S1 and S2 findings are fixed in this run before the phase completes; S3 goes to the
-backlog with its origin.
+**In-slice** S1 and S2 findings are fixed in this run before the phase completes; an
+in-slice S3 goes to the backlog with its origin. A finding **outside** the slice
+follows §10 instead — and an out-of-slice S1 stops the run rather than being fixed.
+The distinction is what makes both rules true at once: fixing a defect you just
+introduced is finishing your own work, while fixing one you merely stumbled over is
+scope creep the user did not ask for.
 
 Play a **real user**, not a developer. Run the scenario from a normal entry point
 through to completion. Green tests do not substitute for this phase.
@@ -549,8 +553,10 @@ now** — it is written to the backlog with its origin, and the report names it.
 is the main defence against scope creep: a run that fixes everything it stumbles
 over finishes nothing and produces an unreviewable diff.
 
-The exception is an S1 bug discovered mid-run: stop, report it, and let the user
-decide whether to finish the current slice first.
+The exception is an **out-of-slice S1**: stop, report it, and let the user decide
+whether to finish the current slice first. An S1 *inside* the slice under test is
+this run's own defect — Phase 4 fixes it before the phase completes and does not
+stop to ask.
 
 ---
 
@@ -635,3 +641,10 @@ decide whether to finish the current slice first.
   lines). Recorded failure: the 150-line cap was prose for four runs and the file
   was over it, unnoticed; `LOOP_STATE.md` more than doubled across three runs while
   every refactor aimed at the fixed half of the read.
+
+- **v1.9** — the S1 contradiction (`C-3`), by the user: §3 Phase 4 said S1 and S2
+  findings "are fixed in this run", §10 said an S1 found mid-run means "stop, report
+  it, and let the user decide". Both now scope themselves: **in-slice** S1/S2 are
+  fixed by Phase 4; an **out-of-slice** S1 stops the run per §10. Recorded failure:
+  run #1 acted on the §3 reading twice without noticing the other rule existed —
+  found by `pr-reviewer` in run #1 Phase 8 and open for five runs.
