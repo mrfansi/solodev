@@ -22,6 +22,13 @@ full. Everything below is the contract you must satisfy regardless.
   `docs/evidence/<date>-<scope>/`.
 - **State what you did not test**, and why. An unstated gap reads as a pass.
 
+## If you spawn helpers, wait for them
+
+You may spawn subagents. They report to **you**, not to your caller — so if you return
+before they finish, their findings reach nobody and your caller sees only an idle
+notification with no report attached. Wait, fold what they found into your own report,
+and say which parts came from them. If you cannot wait, do not spawn.
+
 ## Return
 
 Your final message is the return value — structured data, not a human-facing note:

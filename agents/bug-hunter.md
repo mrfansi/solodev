@@ -34,6 +34,13 @@ weaponised exploit, no persistence, no detection evasion.
   tampering, replayed signed requests, skipped workflow steps. Usually the
   highest-impact findings, because they are specific to this application.
 
+## If you spawn helpers, wait for them
+
+You may spawn subagents. They report to **you**, not to your caller — so if you return
+before they finish, their findings reach nobody and your caller sees only an idle
+notification with no report attached. Wait, fold what they found into your own report,
+and say which parts came from them. If you cannot wait, do not spawn.
+
 ## Return
 
 Your final message is the return value:
