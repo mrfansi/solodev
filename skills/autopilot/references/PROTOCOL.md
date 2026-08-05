@@ -1,4 +1,4 @@
-# LOOP PROTOCOL · v1.12
+# LOOP PROTOCOL · v1.13
 
 > This file is **the protocol source of truth for this repository**. The loop may
 > patch it (§4D). Do not overwrite it from the skill template unless asked.
@@ -74,7 +74,7 @@ is **not** in the repo. Never duplicate the backlog or Run Log into it.
 
 ## §3 RUN PROTOCOL (in order, no skipping)
 
-**Subagent rules (Phases 4, 5, 8).** Every subagent prompt carries: the slice under
+**Subagent rules (Phases 4 and 5).** Every subagent prompt carries: the slice under
 test, how to run the artifact, the tightest condition to test first, and where to
 write evidence. Every prompt also forbids returning while helpers it spawned are
 still running — a helper reports to its spawner, so returning early loses those
@@ -85,14 +85,16 @@ own work — only judgement is isolated.
 
 ### Phase 0 — Orientation & cross-session recovery (≤10% of the run budget)
 
-1. `git status --short --branch` — confirm the branch and working directory are the
-   intended ones. Mandatory, especially in a fresh session, after a resume, or
-   inside a worktree. Then, in **one** shell loop over `git branch -a --no-merged
-   <default>` (`-a`, or a fresh clone sees none; a branch and its `origin/` twin are
-   one hit), a **non-empty** `git diff <default>...<branch>` is a past run's slice
-   still missing from the product, whatever its Run Log line claims — an empty one is
-   a stale pointer. Each hit lands now or gets a backlog row; one that already has a
-   row stays quiet, and new ones are named on `CURRENT`.
+1. `git status --short --branch` — confirm the branch and directory are the intended
+   ones, and **write that branch name into `specs/LOOP_STATE.md`**: Phase 8 returns to
+   it, and a compaction takes it out of context. Mandatory, especially in a fresh
+   session, after a resume, or inside a worktree. Then, in **one** shell loop
+   over `git branch -a --no-merged <default>` (`-a`, or a fresh clone sees none; a
+   branch and its `origin/` twin are one hit), a **non-empty** `git diff
+   <default>...<branch>` is a past run's slice still missing from the product,
+   whatever its Run Log line claims — an empty one is a stale pointer. Each hit lands
+   now or gets a backlog row; one with a row stays quiet, new ones are named on
+   `CURRENT`.
 2. **If the working tree is dirty with an earlier run's uncommitted work, finish
    that run first** (its Phases 6→8) before selecting a new task. Work that passed
    the gates but was never committed can hang for days unnoticed.
@@ -264,26 +266,30 @@ Record how many times a gate failed in the Run Log — that is a metric, not a s
 See §6. A run that does not touch CHANGELOG and `docs/` **counts as failed**,
 whatever the code achieved. README follows §6's usage test.
 
-### Phase 8 — Review, commit & PR
+### Phase 8 — Commit, PR & return
 
-The run works on its own branch, branched from the default branch once Phase 0
-confirmed a clean tree, named **`<type>/<backlog-id>-<what-it-does>`** — say
-`feat/f2-ship-cut-releases`. Type follows the id (`F-`/`E-`→`feat`, `B-`→`fix`,
-`R-`→`refactor`, `C-`→`chore`), matching the run's Conventional Commit (§11A). Run
-numbers are bookkeeping and stay in `specs/LOOP_STATE.md`.
+The run works on its own branch, cut from the branch Phase 0 recorded once that tree
+was clean, named **`<type>/<backlog-id>-<what-it-does>`** — `feat/f2-ship-cut-releases`.
+Type follows the id (`F-`/`E-`→`feat`, `B-`→`fix`, `R-`→`refactor`, `C-`→`chore`),
+matching the run's Conventional Commit (§11A). Run numbers are bookkeeping and stay in
+`specs/LOOP_STATE.md`.
 
-1. **Review before committing** — `Agent` with `subagent_type:
-   "solodev:pr-reviewer"`, against the working diff (§11F). It cannot edit, so it
-   reports rather than patches. Blockers and majors are fixed in this run, before the
-   commit exists.
-2. **Commit** — §11A governs shape: Conventional Commits, one intent per commit, the
+1. **Commit** — §11A governs shape: Conventional Commits, one intent per commit, the
    diff read before committing. The message explains **WHAT** and **WHY**, not a
    restatement of the diff.
-3. **Version** — user-visible change → bump SemVer and move `[Unreleased]` into a
+2. **Version** — user-visible change → bump SemVer and move `[Unreleased]` into a
    version section.
-4. **Open the PR** — the `pr-new` skill, inline. It opens **ready**; draft only when
+3. **Open the PR** — the `pr-new` skill, inline. It opens **ready**; draft only when
    the work is genuinely unfinished, and say why. Merging stays the user's. No remote
    or no `gh` → skip this step, say so in the report, and carry on.
+4. **Back to the branch Phase 0 recorded, then `git pull --ff-only`.** That branch by
+   name — a repo without a remote cannot be asked what its default is. Parked on the
+   branch it just proposed, a run makes the next one branch from unmerged work.
+   `--ff-only` is the point, not a detail: a plain `pull` can strand an unattended run
+   mid-merge, conflict markers in the files the user works from. It refuses instead,
+   and every refusal is reported at §9's `HANDOVER`, with the command to run. No
+   upstream → skip the pull. If the **checkout** refuses, the user edited that branch
+   while the run worked: name the file and stop there, rather than moving their work.
 
 Do not push or tag without permission if this repo has its own release rules; follow
 the repo's rules when they exist.
@@ -516,7 +522,7 @@ RUN #N — <id + task>   [feature | bug S<n> | enhancement | refactor | chore]
 3.  EVIDENCE  : docs/evidence/<date>-<task>/ (name the key files)
 4.  RUBRIC    : <initial>/16 → <final>/16 — weakest item: <#n, why>
 5.  GATES     : format ✓ · lint ✓ · test ✓ (<count> tests)
-6.  PRACTICE  : commit type · review pass done · for bugs: failing test first ✓, root cause ✓
+6.  PRACTICE  : commit type · diff read before commit · for bugs: failing test first ✓, root cause ✓
 7.  DOCS      : README <what changed> · CHANGELOG <entry> · docs/<file>
 8.  BACKLOG   : <new items filed this run with ids and origin, or "none">
 9.  MEMORY    : repo <files written> · Claude Code <name + type, or "nothing new + why">
@@ -524,6 +530,9 @@ RUN #N — <id + task>   [feature | bug S<n> | enhancement | refactor | chore]
 11. PATCH     : yes / no — <section and reason if yes>
 12. NEXT      : <summary; full plan in specs/LOOP_STATE.md §Next iteration plan>
 13. CANDID    : <steps that failed or were skipped, with output, or "none">
+14. HANDOVER  : <PR #n is UNREVIEWED — run /solodev:pr-review | no PR: why>. Back on
+                <branch>, <up to date | not updated: the command to run> | still on
+                <run-branch>, could not return: <reason>.
 ```
 
 ---
@@ -616,10 +625,13 @@ stop to ask.
   A few lines of code beat a new dependency.
 
 ### F. Review
-- **Do not self-approve in the same pass that wrote the code.** The
-  `solodev:pr-reviewer` subagent runs before every commit, in its own context and
-  without edit tools, reading the change free of the author's assumptions about what
-  it was supposed to do.
+- **The loop does not review its own work; the user does.** No run spawns a reviewer
+  over its own diff. What was once a mandatory pre-commit pass is now the user's call:
+  the run opens the PR and stops there, and `/solodev:pr-review` reads it when they
+  ask — its own context, no edit tools, free of the author's assumptions.
+- **The trade is deliberate.** Nothing now stands between the last quality gate and
+  the commit: read the diff before committing (§11A), and treat every PR the loop
+  opens as unreviewed until a human says otherwise.
 
 ### G. Scope discipline
 - Unrelated improvements spotted along the way go to the backlog, not into this

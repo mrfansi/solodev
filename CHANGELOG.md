@@ -9,6 +9,18 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- **The quality gate now refuses to let the loop's own rules go backwards.** A repo
+  running the loop keeps its protocol in `specs/`, which is deliberately not committed
+  — so it accumulates across runs while the copy that ships with the plugin does not.
+  Editing the shipped copy from an older starting point and putting it back over the
+  live one reverted a rule that had been agreed one run earlier, and no diff looked
+  wrong, because both files ended on the same version number. The gate now remembers
+  the highest version it has seen and fails if the live protocol drops below it.
+
+  `python3 scripts/validate.py --selfcheck` proves the check can fail: 40 assertions
+  against real files, including every shape the bookkeeping file can take that would
+  otherwise have let a regression through, or destroyed the protocol outright.
+
 - **A hook that stops you committing the workspace.** Installing the plugin now
   installs one Claude Code hook (`PreToolUse`, on Bash). It blocks a `git commit` that
   would put `specs/` or `docs/evidence/` into git history — bookkeeping, and raw
@@ -76,6 +88,17 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   new conversation — and defines what a new conversation actually is, since "start a
   new session" is not an instruction anyone can follow without that.
 
+- **A loop run no longer reviews its own work.** It used to spawn a reviewer over its
+  own diff before every commit. It does not any more: it opens the pull request and
+  stops there. Reviewing is `/solodev:pr-review`, which now runs only when you invoke
+  it, and the PR a run opens should be treated as unreviewed until you have.
+
+  This is a deliberate trade, so it is worth saying what is on both sides. The
+  automatic pass was productive — every one of its invocations returned findings, none
+  ever came back clean — and nothing replaces it. What it was not, is a review: a
+  check a tool runs on itself and can act on alone is a step in a pipeline, and the
+  point of a review is that a second party decides. Getting that back is one command.
+
 - `scripts/validate.py` now checks `hooks/hooks.json`: that the file exists, that it
   parses, that every event name is a real Claude Code hook event, and that every
   `${CLAUDE_PLUGIN_ROOT}` script path resolves. Nothing at runtime reports a hook that
@@ -119,6 +142,13 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   cannot confuse for the first. A stale or hand-edited marker is refused rather than
   subtracted — the failure of a measurement tool is inherited by everything downstream,
   so it prints nothing rather than a plausible wrong number.
+
+- **A run no longer leaves you standing on the branch it just proposed.** After
+  opening the pull request it returns to your default branch and pulls it. Staying put
+  meant the next run cut its branch from work that was not merged yet, so each run
+  carried the previous one's changes inside its own diff and the two drifted further
+  apart with every iteration — until a pull request that had been clean turned
+  conflicted because others had landed ahead of it.
 
 - **Token figures were undercounting output by roughly sixteen times.** Claude Code
   repeats a message's `usage` on every content-block line, and while the three prompt
