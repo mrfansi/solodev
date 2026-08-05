@@ -55,6 +55,13 @@ after 7 days. Say this once when scheduling starts. It costs little, because the
 loop's state lives in the repo — a fresh session only needs `/solodev:autopilot` again to
 pick up exactly where the last one stopped.
 
+**Say the cost of a short interval too, in the same breath.** A wakeup fires inside the
+session that set it, and a second run there re-reads everything the first accumulated —
+measured here, several times the per-turn cost of a run starting fresh. So an interval
+under an hour buys repetition, not throughput. When the user asks for one, set it and
+say plainly that closing the session and starting again is cheaper; do not quietly
+substitute a longer one, and do not stay silent about the bill.
+
 ---
 
 ## First step: decide the mode

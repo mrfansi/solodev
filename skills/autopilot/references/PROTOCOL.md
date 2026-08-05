@@ -105,6 +105,8 @@ own work — only judgement is isolated.
    **Do not read `specs/LOOP_ARCHIVE.md` here.** Open it only when you need the
    trail behind a specific closed item; reading it every run undoes the roll-off.
 4. Read Claude Code memory for context that is not in the repo.
+5. `python3 scripts/token-cost.py --mark` — where this run starts, so §4B can report
+   the run rather than every run sharing the session.
 
 **Output of this phase — exactly 4 lines:**
 ```
@@ -317,10 +319,13 @@ Append a **Run Log** entry to `specs/LOOP_STATE.md`:
 Run #N | task | rubric-iterations | score initial→final | rework? (cause) | gate failures | cost <n>k tok / <n> turns / <n> subagents
 ```
 
-The cost field comes from `python3 scripts/token-cost.py`, run at this point and not
-guessed. It reads Claude Code's own transcript. **Turn count is the term that moves**
-— cost is the sum of the context size at every turn, so a token admitted early is
-re-billed by every turn after it. A run that reports no cost has skipped this phase.
+The cost field is **this run's**, from `python3 scripts/token-cost.py` run at this
+point, against the `--mark` Phase 0 set. Not guessed, and not the session total: a
+session may hold several runs, and their sum answers no question the Run Log asks. With
+no mark the script says so and prints the session instead — report it as the session,
+never relabelled. **Turn count is the term that moves**: cost is the sum of the context
+size at every turn, so a token admitted early is re-billed by every turn after it. A
+run that reports no cost has skipped this phase.
 
 Then add **at least one new rule** to `LOOP_LEARNINGS.md`, OR state explicitly "no
 new lesson" with the reason.

@@ -82,6 +82,12 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
+- **The README no longer suggests running the loop on a short timer**, and says why:
+  a scheduled run fires inside the conversation that scheduled it, where it re-reads
+  everything the previous run accumulated. It now states the cadence — one run, then a
+  new conversation — and defines what a new conversation actually is, since "start a
+  new session" is not an instruction anyone can follow without that.
+
 - **A loop run no longer reviews its own work.** It used to spawn a reviewer over its
   own diff before every commit. It does not any more: it opens the pull request and
   stops there. Reviewing is `/solodev:pr-review`, which now runs only when you invoke
@@ -128,6 +134,14 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   so no figure is claimed here.
 
 ### Fixed
+
+- **The token figure a run reported was the whole conversation's, not the run's.**
+  Several runs share one conversation, so the number restated a running total and no
+  per-run trend could be read from it at all. A run now records where it starts and
+  reports the difference, with the conversation total printed beside it in a shape you
+  cannot confuse for the first. A stale or hand-edited marker is refused rather than
+  subtracted — the failure of a measurement tool is inherited by everything downstream,
+  so it prints nothing rather than a plausible wrong number.
 
 - **A run no longer leaves you standing on the branch it just proposed.** After
   opening the pull request it returns to your default branch and pulls it. Staying put
