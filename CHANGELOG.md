@@ -9,6 +9,18 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- **The quality gate now refuses to let the loop's own rules go backwards.** A repo
+  running the loop keeps its protocol in `specs/`, which is deliberately not committed
+  — so it accumulates across runs while the copy that ships with the plugin does not.
+  Editing the shipped copy from an older starting point and putting it back over the
+  live one reverted a rule that had been agreed one run earlier, and no diff looked
+  wrong, because both files ended on the same version number. The gate now remembers
+  the highest version it has seen and fails if the live protocol drops below it.
+
+  `python3 scripts/validate.py --selfcheck` proves the check can fail: 40 assertions
+  against real files, including every shape the bookkeeping file can take that would
+  otherwise have let a regression through, or destroyed the protocol outright.
+
 - **A hook that stops you committing the workspace.** Installing the plugin now
   installs one Claude Code hook (`PreToolUse`, on Bash). It blocks a `git commit` that
   would put `specs/` or `docs/evidence/` into git history — bookkeeping, and raw
