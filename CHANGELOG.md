@@ -70,6 +70,17 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
+- **A loop run no longer reviews its own work.** It used to spawn a reviewer over its
+  own diff before every commit. It does not any more: it opens the pull request and
+  stops there. Reviewing is `/solodev:pr-review`, which now runs only when you invoke
+  it, and the PR a run opens should be treated as unreviewed until you have.
+
+  This is a deliberate trade, so it is worth saying what is on both sides. The
+  automatic pass was productive — every one of its invocations returned findings, none
+  ever came back clean — and nothing replaces it. What it was not, is a review: a
+  check a tool runs on itself and can act on alone is a step in a pipeline, and the
+  point of a review is that a second party decides. Getting that back is one command.
+
 - `scripts/validate.py` now checks `hooks/hooks.json`: that the file exists, that it
   parses, that every event name is a real Claude Code hook event, and that every
   `${CLAUDE_PLUGIN_ROOT}` script path resolves. Nothing at runtime reports a hook that
@@ -105,6 +116,13 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   so no figure is claimed here.
 
 ### Fixed
+
+- **A run no longer leaves you standing on the branch it just proposed.** After
+  opening the pull request it returns to your default branch and pulls it. Staying put
+  meant the next run cut its branch from work that was not merged yet, so each run
+  carried the previous one's changes inside its own diff and the two drifted further
+  apart with every iteration — until a pull request that had been clean turned
+  conflicted because others had landed ahead of it.
 
 - **Token figures were undercounting output by roughly sixteen times.** Claude Code
   repeats a message's `usage` on every content-block line, and while the three prompt

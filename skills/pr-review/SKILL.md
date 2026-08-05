@@ -1,6 +1,6 @@
 ---
 name: pr-review
-description: Review a pull request and report findings ranked by severity, posting them to the PR as a comment when one exists. Use when asked to review a PR or whether it is safe to merge. Also invoked by the loop skill before committing. Optional PR link or number; with no argument it reviews the current branch's PR.
+description: Review a pull request and report findings ranked by severity, posting them to the PR as a comment when one exists. Use when asked to review a PR or whether it is safe to merge. Runs only when invoked; nothing triggers it automatically. Optional PR link or number; with no argument it reviews the current branch's PR.
 ---
 
 # pr-review
@@ -105,10 +105,14 @@ are different decisions and the second one is the user's.
 gh pr review <pr> --comment --body-file -    # the report on stdin, so no file is left behind
 ```
 
-**There is not always a PR.** Invoked from the loop, this review runs at Phase 8 step 1
-— against the working diff, before the commit and before `pr-new` opens anything. There
-is no `<pr>` to name, and blockers get fixed before the PR exists at all. In that case
-post nothing and say so; the findings reach the run report instead.
+**Then clear the "Not reviewed yet." footer** if the body carries one — `gh pr edit
+<pr> --body` with that line removed. A description still claiming the PR is unreviewed,
+sitting above a review, teaches the reader to distrust the line everywhere else it
+appears.
+
+**There is not always a PR.** Asked to review a branch that has none open — nothing
+pushed yet, or a local experiment — there is no `<pr>` to name. Post nothing, say so,
+and return the report to whoever asked; it is the same review either way.
 
 `--comment` is not a lesser choice — for a PR you opened yourself, it is the **only**
 state GitHub allows. Both others are rejected outright:
@@ -130,15 +134,15 @@ human, because an automated approval defeats the purpose of the review.
 
 **Never merge**, on any PR.
 
-## When the loop skill invokes this
+## Nothing invokes this but you
 
-Runs before the commit, on the working diff rather than an open PR:
+`/solodev:autopilot` used to run this review over its own diff before every commit.
+It no longer does — a review nobody asked for is a review nobody reads, and this is a
+manual tool. A loop run now opens its PR and stops there.
+
+So **the PR the loop opens is unreviewed** until you say otherwise. Reviewing it is
+one command:
 
 ```bash
-git diff HEAD          # staged and unstaged
+/solodev:pr-review        # no argument: the current branch's PR
 ```
-
-Blockers and majors are fixed **before** the commit, in that same run. This is what
-satisfies the protocol's rule against approving code in the same pass that wrote it:
-the review runs as a separate agent with its own context, so it reads the code
-without the author's assumptions about what it was supposed to do.

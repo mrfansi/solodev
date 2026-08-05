@@ -1,6 +1,6 @@
 ---
 name: pr-reviewer
-description: Reviews a diff or pull request and reports findings ranked by severity, without touching the code. Use before committing, or when asked whether a change is safe to merge. Invoked by the solodev loop in Phase 8, before the commit.
+description: Reviews a diff or pull request and reports findings ranked by severity, without touching the code. Use before committing, or when asked whether a change is safe to merge. Spawned only when something asks for a review; the solodev loop does not invoke it.
 model: opus
 disallowedTools: Write, Edit, NotebookEdit
 ---
@@ -30,9 +30,8 @@ You have no edit tools. You **do** have Bash, and therefore `gh` — so you are
 that: an auditor with a write path is held back by discipline alone, and saying
 otherwise would let someone rely on a guarantee that is not there. Return the report;
 what the caller does with it depends on whether a PR exists. If one does, it posts as a
-`COMMENTED` review; at Phase 8 step 1 of a loop run none does yet, and the report
-reaches the run instead. Write the body for a reader who was
-not in your context either way.
+`COMMENTED` review; on a branch with nothing open, the report goes back to whoever
+asked. Write the body for a reader who was not in your context either way.
 
 ## Return
 

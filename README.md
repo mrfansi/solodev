@@ -16,14 +16,15 @@ audit, and QA skills it calls along the way.
 | `/solodev:be [target]` | Back-end engineering — boundaries, API and data design, transactions |
 | `/solodev:pr-new [title]` | Opens a PR with a title and body that follow GitHub best practice |
 | `/solodev:ship [bump]` | Cuts a release — derives the SemVer bump, moves the changelog, stops before tagging |
-| `/solodev:pr-review [pr]` | Reviews a PR, ranks findings by severity, posts them to the PR when one exists |
+| `/solodev:pr-review [pr]` | Reviews a PR, ranks findings by severity, posts them to the PR when one exists. **Manual only — nothing else ever calls it** |
 | `/solodev:ux [flow]` | UX audit — task flows, cognitive load, error recovery |
 | `/solodev:ui [screen]` | UI audit — hierarchy, typography, spacing, contrast, states |
 | `/solodev:qa [change]` | QA — builds a test matrix, executes it, files reproducible bugs |
 | `/solodev:bug-hunter [target]` | Security audit — thinks like an attacker against your own code |
 
-Each works standalone. `loop` calls the others automatically at the phase where each
-belongs.
+Each works standalone. `loop` calls several of them automatically at the phase where
+each belongs. It never calls `pr-review` — **the PR a run opens is unreviewed until
+you review it**, and that is one command.
 
 `fe` covers front-end **engineering**; for visual craft — typography, palette, motion —
 it defers to the [`impeccable`](https://github.com/pbakaus/impeccable) skill, which is
@@ -37,7 +38,7 @@ The audits ship as subagents too, so `loop` can run them in isolated contexts:
 |---|---|---|
 | `solodev:qa-runner` | yes | Executes the test matrix; needs edit access to write evidence and to temporarily revert a fix to prove a test catches it |
 | `solodev:bug-hunter` | **no** | Attacks trust boundaries, reports vulnerabilities with proof |
-| `solodev:pr-reviewer` | **no** | Reviews the diff, reports by severity, never approves |
+| `solodev:pr-reviewer` | **no** | Never runs unasked. Reviews the diff, reports by severity, never approves |
 | `solodev:ux-auditor` | **no** | Judges whether the task can be completed |
 | `solodev:ui-auditor` | **no** | Judges how it presents |
 | `solodev:code-mapper` | yes — `specs/graph/` only | Maps one module into a graph card, in parallel with its siblings |
@@ -101,8 +102,8 @@ first to touch code.
 - Pass a quality rubric (≥14/16, no item at 0)
 - Pass format, lint, and test gates
 - Update `CHANGELOG.md` and `docs/` — and `README.md` when usage changed
-- Get reviewed by a separate agent before committing
 - End in a PR on its own branch — ready for review, never auto-merged
+- Put you back on the branch you started on, up to date
 
 ### It survives sessions
 
